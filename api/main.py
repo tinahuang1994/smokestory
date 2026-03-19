@@ -164,45 +164,48 @@ async def map_fires(date: str):
     return JSONResponse(content={"type": "FeatureCollection", "features": features})
 
 
-TIGERWEB_URL = (
-    "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/"
-    "tigerWMS_Current/MapServer/84/query"
-    "?where=STATE%3D06&outFields=COUNTY,NAME,STATE&outSR=4326&f=geojson"
-)
+CA_COUNTIES_URL = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/california-counties.geojson"
 
 
 @app.get("/map/pm25/06/{date}")
 async def map_pm25(date: str):
-    # 1. Fetch California county boundaries from Census TIGERweb (no auth, no file)
+    # 1. Fetch California county boundaries from GitHub static GeoJSON
     try:
-        resp = requests.get(TIGERWEB_URL, verify=False, timeout=30)
+        resp = requests.get(CA_COUNTIES_URL, verify=False, timeout=30)
         resp.raise_for_status()
         geojson = resp.json()
         features = geojson.get("features", [])
-        print(f"[map_pm25] TIGERweb returned {len(features)} county features")
+        print(f"[map_pm25] Loaded {len(features)} California county features")
     except Exception as e:
-        print(f"[map_pm25] TIGERweb fetch failed: {e}")
+        print(f"[map_pm25] County GeoJSON fetch failed: {e}")
         return Response(content=json.dumps(EMPTY_FC), media_type="application/json")
 
-    # 2. Fetch PM2.5 readings; keyed by 3-digit county_code matching TIGERweb COUNTY field
+    # 2. Fetch PM2.5 readings and build a lowercase name → pm25_mean lookup
     readings = get_pm25_readings("06", date, date)
-    pm25_by_county = {}
+    pm25_by_name = {}
     if readings:
         df = pd.DataFrame(readings)
-        if "county_code" in df.columns and "arithmetic_mean" in df.columns:
-            pm25_by_county = (
-                df.groupby("county_code")["arithmetic_mean"].mean().to_dict()
+        if "county" in df.columns and "arithmetic_mean" in df.columns:
+            pm25_by_name = (
+                df.groupby(df["county"].str.lower())["arithmetic_mean"]
+                .mean()
+                .to_dict()
             )
-    print(f"[map_pm25] PM2.5 readings for {len(pm25_by_county)} counties on {date}")
+    print(f"[map_pm25] PM2.5 data for {len(pm25_by_name)} counties on {date}")
 
-    # 3. Merge PM2.5 into each feature's properties
+    # 3. Merge PM2.5 into each feature by case-insensitive name match
+    matched = 0
     for feat in features:
         props = feat.setdefault("properties", {})
-        county_code = props.get("COUNTY", "")
-        props["county_name"] = props.get("NAME", "")
-        props["pm25_mean"] = pm25_by_county.get(county_code)
+        name = props.get("name", "")
+        props["county_name"] = name
+        pm25 = pm25_by_name.get(name.lower())
+        props["pm25_mean"] = pm25
         props["smoke_density"] = None
         props["has_smoke"] = False
+        if pm25 is not None:
+            matched += 1
+    print(f"[map_pm25] Matched PM2.5 data for {matched}/{len(features)} counties")
 
     return Response(content=json.dumps(geojson), media_type="application/json")
 
