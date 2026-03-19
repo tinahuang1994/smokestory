@@ -1,5 +1,6 @@
 import io
 import json
+import math
 import os
 import tempfile
 import traceback
@@ -7,6 +8,17 @@ import requests
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import box
+
+
+def safe_val(v):
+    if v is None:
+        return None
+    try:
+        if math.isnan(float(v)):
+            return None
+    except (TypeError, ValueError):
+        pass
+    return v
 
 from pipeline.epa_aqs import get_pm25_readings
 from pipeline.goes_hms import get_smoke_polygons
@@ -203,9 +215,9 @@ def build_county_layer(state_code, date):
             results.append({
                 "county_name": row.get("NAME", ""),
                 "state": state_code,
-                "pm25_mean": pm25_by_county.get(county_code),
-                "smoke_density": row.get(density_col) if density_col else None,
-                "has_smoke": not pd.isna(row.get("index_right")) if "index_right" in row else False,
+                "pm25_mean": safe_val(pm25_by_county.get(county_code)),
+                "smoke_density": safe_val(row.get(density_col) if density_col else None),
+                "has_smoke": safe_val(not pd.isna(row.get("index_right")) if "index_right" in row else False),
             })
     else:
         print("No smoke data available; returning counties without smoke info.")
@@ -214,7 +226,7 @@ def build_county_layer(state_code, date):
             results.append({
                 "county_name": row.get("NAME", ""),
                 "state": state_code,
-                "pm25_mean": pm25_by_county.get(county_code),
+                "pm25_mean": safe_val(pm25_by_county.get(county_code)),
                 "smoke_density": None,
                 "has_smoke": False,
             })
