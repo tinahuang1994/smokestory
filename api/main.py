@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from pipeline.build_layer import build_county_layer, COUNTIES_PATH
+from pipeline.epa_aqs import get_pm25_readings
 from pipeline.goes_hms import get_smoke_polygons
 from pipeline.viirs_fire import get_active_fires
 from pipeline.news import get_news_headlines
@@ -163,19 +164,47 @@ async def map_fires(date: str):
     return JSONResponse(content={"type": "FeatureCollection", "features": features})
 
 
+TIGERWEB_URL = (
+    "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/"
+    "tigerWMS_Current/MapServer/84/query"
+    "?where=STATE%3D06&outFields=COUNTY,NAME,STATE&outSR=4326&f=geojson"
+)
+
+
 @app.get("/map/pm25/06/{date}")
 async def map_pm25(date: str):
-    if not os.path.exists(COUNTIES_PATH):
+    # 1. Fetch California county boundaries from Census TIGERweb (no auth, no file)
+    try:
+        resp = requests.get(TIGERWEB_URL, verify=False, timeout=30)
+        resp.raise_for_status()
+        geojson = resp.json()
+        features = geojson.get("features", [])
+        print(f"[map_pm25] TIGERweb returned {len(features)} county features")
+    except Exception as e:
+        print(f"[map_pm25] TIGERweb fetch failed: {e}")
         return Response(content=json.dumps(EMPTY_FC), media_type="application/json")
-    counties = build_county_layer("06", date)
-    pm25_lookup = {r["county_name"]: r for r in counties}
-    gdf = gpd.read_file(COUNTIES_PATH)
-    gdf = gdf[gdf["STATEFP"] == "06"].copy()
-    gdf["pm25_mean"] = gdf["NAME"].map(lambda n: pm25_lookup.get(n, {}).get("pm25_mean"))
-    gdf["smoke_density"] = gdf["NAME"].map(lambda n: pm25_lookup.get(n, {}).get("smoke_density"))
-    gdf["has_smoke"] = gdf["NAME"].map(lambda n: pm25_lookup.get(n, {}).get("has_smoke", False))
-    gdf["county_name"] = gdf["NAME"]
-    return Response(content=gdf[["county_name", "pm25_mean", "smoke_density", "has_smoke", "geometry"]].to_json(), media_type="application/json")
+
+    # 2. Fetch PM2.5 readings; keyed by 3-digit county_code matching TIGERweb COUNTY field
+    readings = get_pm25_readings("06", date, date)
+    pm25_by_county = {}
+    if readings:
+        df = pd.DataFrame(readings)
+        if "county_code" in df.columns and "arithmetic_mean" in df.columns:
+            pm25_by_county = (
+                df.groupby("county_code")["arithmetic_mean"].mean().to_dict()
+            )
+    print(f"[map_pm25] PM2.5 readings for {len(pm25_by_county)} counties on {date}")
+
+    # 3. Merge PM2.5 into each feature's properties
+    for feat in features:
+        props = feat.setdefault("properties", {})
+        county_code = props.get("COUNTY", "")
+        props["county_name"] = props.get("NAME", "")
+        props["pm25_mean"] = pm25_by_county.get(county_code)
+        props["smoke_density"] = None
+        props["has_smoke"] = False
+
+    return Response(content=json.dumps(geojson), media_type="application/json")
 
 
 # To run:
