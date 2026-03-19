@@ -452,7 +452,7 @@
 
     /* ── LEGEND ── */
     #legend {
-      bottom: 28px;
+      top: 70px;
       right: calc(var(--panel) + 20px);
       padding: 16px 20px;
     }
@@ -1386,8 +1386,8 @@
     maxZoom: 12,
     zoomControl: false,
     attributionControl: true,
-    maxBounds: L.latLngBounds([[32.0, -125.0], [42.5, -113.5]]),
-    maxBoundsViscosity: 1.0,
+    maxBounds: L.latLngBounds([[30.0, -126.0], [43.0, -112.0]]),
+    maxBoundsViscosity: 0.5,
   });
 
   L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png', {
