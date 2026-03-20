@@ -44,6 +44,35 @@ async def serve_frontend():
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 
+def validate_date(date_str: str):
+    try:
+        d = datetime.strptime(date_str, "%Y%m%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400,
+            detail="Invalid date format. Use YYYYMMDD (e.g. 20250109).")
+    if d < date_type(2005, 8, 1):
+        raise HTTPException(status_code=400,
+            detail="No data available before August 2005. HMS smoke data begins August 2005.")
+    if d > date_type.today():
+        raise HTTPException(status_code=400,
+            detail="Cannot request future dates.")
+    return d
+
+
+def check_data_quality(county_data):
+    pm25 = county_data.get("pm25_mean")
+    smoke = county_data.get("smoke_density")
+    has_smoke = county_data.get("has_smoke")
+    if has_smoke and smoke in ["Medium", "Heavy"] and pm25 is not None and pm25 < 20:
+        return ("⚠️ Monitor data may be incomplete for this date. EPA sensors sometimes go "
+                "offline during major fire events, which can produce misleadingly low PM2.5 "
+                "readings. Cross-reference with official AQI sources for this date.")
+    if has_smoke and pm25 is None:
+        return ("⚠️ No ground monitor data available for this county on this date. Smoke is "
+                "present per satellite data. Check AirNow.gov for historical air quality information.")
+    return None
+
+
 class ChatRequest(BaseModel):
     question: str
     county_data: dict
@@ -56,6 +85,7 @@ async def health():
 
 @app.get("/county/{state_code}/{county_name}/{date}")
 async def get_county(state_code: str, county_name: str, date: str):
+    validate_date(date)
     counties = build_county_layer(state_code, date)
     match = next(
         (c for c in counties if c["county_name"].lower() == county_name.lower()),
@@ -63,12 +93,15 @@ async def get_county(state_code: str, county_name: str, date: str):
     )
     if match is None:
         raise HTTPException(status_code=404, detail=f"County '{county_name}' not found")
+    warning = check_data_quality(match)
+    match["data_quality_warning"] = warning
     narrative = generate_narrative(match, date=date)
     return {**match, "narrative": narrative}
 
 
 @app.get("/top-stories/{date}")
 async def top_stories(date: str):
+    validate_date(date)
     counties = build_county_layer("06", date)
     filtered = [c for c in counties if c["has_smoke"] and c["pm25_mean"] is not None]
     filtered.sort(key=lambda c: c["pm25_mean"], reverse=True)
@@ -92,7 +125,10 @@ County context:
 
 User question: {body.question}
 
-Answer in plain English, keeping your response concise and accessible."""
+Answer in plain English, keeping your response concise and accessible.
+
+Always end your response with this line on its own:
+For medical advice, consult your doctor or local health authority. For current air quality, visit AirNow.gov."""
 
     message = client.messages.create(
         model="claude-sonnet-4-20250514",

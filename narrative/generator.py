@@ -103,6 +103,15 @@ def generate_narrative(county_data, date=None):
     if news_section:
         sections.append(news_section)
 
+    warning = county_data.get("data_quality_warning")
+    if warning:
+        sections.append(
+            f"DATA QUALITY NOTE: {warning}\n"
+            "Because of this, do NOT state that air quality is safe or good based solely "
+            "on the PM2.5 reading. Acknowledge that monitoring data may be incomplete and "
+            "recommend users verify with official sources."
+        )
+
     sections.append(
         "If the news context contradicts the air quality data, prioritize the data. "
         "Do not imply conditions that contradict the PM2.5 classification. "
