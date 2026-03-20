@@ -1294,7 +1294,7 @@
       <div class="badge-row" id="panel-badges"></div>
     </div>
     <div class="panel-body">
-      <div id="panel-dq-warning" style="display:none;"></div>
+      <div id="panel-dq-warning" style="display:none; border-left: 3px solid #f97316; background: rgba(249,115,22,0.08); padding: 10px 14px; margin: 12px 0; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: #f97316; line-height: 1.5;"></div>
       <div id="narrative-area">
         <div id="narrative-output"></div>
       </div>
@@ -1659,24 +1659,18 @@
         throw new Error(`HTTP ${storyRes.status}::${errBody.detail || ''}`);
       }
       const data = await storyRes.json();
+      console.log('API response:', data);
       currentCounty = { ...currentCounty, ...data };
 
       // Show data quality warning if present
       const dqWarn = document.getElementById('panel-dq-warning');
       if (dqWarn) {
         if (data.data_quality_warning) {
+          dqWarn.textContent = data.data_quality_warning;
           dqWarn.style.display = 'block';
-          dqWarn.innerHTML =
-            `<div style="border-left:3px solid #f59e0b;background:rgba(245,158,11,0.07);` +
-                            `padding:10px 14px;margin-bottom:4px;">` +
-              `<span style="font-family:'DM Sans',sans-serif;font-size:0.75rem;` +
-                           `color:#f59e0b;line-height:1.55;display:block;">` +
-                escHtml(data.data_quality_warning) +
-              `</span>` +
-            `</div>`;
         } else {
           dqWarn.style.display = 'none';
-          dqWarn.innerHTML = '';
+          dqWarn.textContent = '';
         }
       }
 
