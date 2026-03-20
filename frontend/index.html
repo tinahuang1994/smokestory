@@ -877,7 +877,30 @@
       padding: 10px 0;
     }
 
-    #narrative-output { position: relative; }
+    #narrative-output { position: relative; transition: opacity 0.3s ease; }
+
+    /* ── NARRATIVE STAGE LOADING ── */
+    .narrative-stage-loading {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--amber);
+      text-align: center;
+      padding: 28px 12px;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── PM2.5 MEAN NOTE ── */
+    .pm25-mean-note {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      padding: 7px 0 10px;
+      font-style: italic;
+    }
 
     .narrative-text {
       font-family: var(--serif);
@@ -1132,6 +1155,26 @@
       50%       { opacity: 0; }
     }
 
+    /* ── COUNTY HOVER TOOLTIP ── */
+    .leaflet-tooltip {
+      background: rgba(10,10,15,0.95) !important;
+      border: 1px solid rgba(249,115,22,0.6) !important;
+      border-radius: 0 !important;
+      color: #fff !important;
+      font-family: 'DM Mono', monospace !important;
+      font-size: 0.72rem !important;
+      letter-spacing: 0.04em !important;
+      padding: 6px 10px !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7) !important;
+      white-space: nowrap !important;
+    }
+    .leaflet-tooltip-top::before {
+      border-top-color: rgba(249,115,22,0.6) !important;
+    }
+
+    /* ── CURSOR ── */
+    .leaflet-interactive { cursor: pointer !important; }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 640px) {
       :root { --panel: 100vw; }
@@ -1227,6 +1270,13 @@
         </div>
       </div>
 
+      <div id="historic-banner" style="display:none;margin-top:4px;padding:11px 14px;border:1px solid var(--border-amber);border-left:2px solid var(--amber);background:var(--amber-dim);">
+        <div style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:300;color:var(--text-dim);line-height:1.55;">
+          📅 Showing <strong style="color:var(--amber-l);font-weight:400;">Palisades &amp; Eaton Fires — Jan 9, 2025</strong><br>
+          <span style="color:var(--text-muted);font-size:0.7rem;">Change the date above to explore other events</span>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1240,7 +1290,6 @@
     </div>
     <div class="panel-body">
       <div id="narrative-area">
-        <button class="btn" id="story-btn" onclick="generateStory()" style="width:100%;margin-bottom:4px;">Generate Story</button>
         <div id="narrative-output"></div>
       </div>
       <div class="chat-divider"></div>
@@ -1265,11 +1314,11 @@
     <span class="layer-dot" style="background:#f97316;opacity:0.85;"></span>
     <label for="chk-pm25">PM2.5 Counties</label>
     <button class="info-btn" onclick="showInfo('info-pm25',event)" title="About this layer">ⓘ</button>
-    <div class="info-tooltip" id="info-pm25">Color shows daily maximum fine particle pollution (PM2.5) from EPA ground monitors across California's 58 counties, using the highest monitor reading per county (EPA AQI convention).<br/>Fine particles are tiny pieces of dust, smoke, and pollution small enough to enter your lungs. Higher levels cause breathing problems, especially for children, elderly, and people with heart or lung conditions. The EPA updated its PM2.5 standard in February 2024.<br/>🟢 Good (0–9 µg/m³): Air is clean and safe for everyone.<br/>🟡 Moderate (9–35 µg/m³): Unusually sensitive people may notice effects.<br/>🟠 Unhealthy for Sensitive Groups (35–55 µg/m³): Children, elderly, and those with heart or lung conditions should limit outdoor time.<br/>🔴 Unhealthy (55–150 µg/m³): Everyone may begin to experience health effects.<br/>🟣 Very Unhealthy (150–250 µg/m³): Health alert — serious effects for everyone; avoid prolonged outdoor activity.<br/>🔴 Hazardous (250+ µg/m³): Emergency conditions — entire population at risk; stay indoors.<br/>Source: U.S. EPA Air Quality System (AQS). Updated daily.</div>
+    <div class="info-tooltip" id="info-pm25">Color shows daily maximum fine particle pollution (PM2.5) from EPA ground monitors across California's 58 counties, using the highest monitor reading per county (EPA AQI convention).<br/>Fine particles are tiny pieces of dust, smoke, and pollution small enough to enter your lungs. Higher levels cause breathing problems, especially for children, elderly, and people with heart or lung conditions. The EPA updated its PM2.5 standard in February 2024.<br/>🟢 Good (0–9 µg/m³): Air is clean and safe for everyone.<br/>🟡 Moderate (9–35 µg/m³): Unusually sensitive people may notice effects.<br/>🟠 Unhealthy for Sensitive Groups (35–55 µg/m³): Children, elderly, and those with heart or lung conditions should limit outdoor time.<br/>🔴 Unhealthy (55–150 µg/m³): Everyone may begin to experience health effects.<br/>🟣 Very Unhealthy (150–250 µg/m³): Health alert — serious effects for everyone; avoid prolonged outdoor activity.<br/>🔴 Hazardous (250+ µg/m³): Emergency conditions — entire population at risk; stay indoors.<br/>Source: U.S. EPA Air Quality System (AQS). Updated daily.<br/><em style="color:var(--text-muted);font-size:0.6rem;">Daily average across all monitors in this county (mean)</em></div>
   </div>
   <div class="layer-row">
     <input type="checkbox" id="chk-smoke" checked onchange="toggleLayer('smoke')" />
-    <span class="layer-dot" style="background:#fb923c;opacity:0.65;"></span>
+    <span class="layer-dot" style="background:#c2410c;opacity:0.85;"></span>
     <label for="chk-smoke">Smoke Plumes</label>
     <button class="info-btn" onclick="showInfo('info-smoke',event)" title="About this layer">ⓘ</button>
     <div class="info-tooltip" id="info-smoke">Smoke plume boundaries drawn by NOAA meteorologists from GOES satellite imagery. Darker shading means denser smoke:<br/>○ Light smoke — hazy conditions, air quality may be slightly reduced<br/>◑ Medium smoke — clearly visible smoke, sensitive groups may be affected<br/>● Heavy smoke — thick smoke, unhealthy air quality likely at ground level<br/>Note: smoke shown here is in the atmosphere and may not always reach ground level. Check PM2.5 Counties layer for actual air quality impact.<br/>Source: NOAA Hazard Mapping System (HMS). Updated daily.</div>
@@ -1294,6 +1343,7 @@
   <div class="legend-row"><span class="legend-swatch" style="background:#7e22ce;"></span>Hazardous (250+)</div>
   <div class="legend-row"><span class="legend-swatch" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);"></span>No data</div>
   <div class="legend-footnote">* Sensitive groups include children, elderly, and those with heart or lung conditions</div>
+  <div class="legend-footnote" style="margin-top:6px;">Uses revised February 2024 EPA PM2.5 thresholds</div>
 </div>
 
 <!-- FOOTER -->
@@ -1313,10 +1363,10 @@
   // ── Historic Events ───────────────────────────────────────
   const HISTORIC_EVENTS = [
     { date: "20250109", name: "Palisades & Eaton Fires", location: "Los Angeles County",       year: "2025", note: "Deadliest LA fire in a century" },
-    { date: "20181108", name: "Camp Fire",               location: "Paradise / Butte County",  year: "2018", note: "Deadliest wildfire in CA history · 85 deaths" },
     { date: "20210913", name: "Dixie Fire",              location: "Northern California",       year: "2021", note: "2nd largest wildfire in CA history · 963,000 acres" },
     { date: "20200909", name: "Creek & August Complex",  location: "Central & Northern CA",    year: "2020", note: "Worst smoke season in CA history" },
     { date: "20200927", name: "Glass Fire",              location: "Napa & Sonoma",            year: "2020", note: "67,000 acres · Wine country devastated" },
+    { date: "20181108", name: "Camp Fire",               location: "Paradise / Butte County",  year: "2018", note: "Deadliest wildfire in CA history · 85 deaths" },
     { date: "20171008", name: "Tubbs Fire",              location: "Santa Rosa",               year: "2017", note: "5,636 structures destroyed" },
     { date: "20171204", name: "Thomas Fire",             location: "Ventura & Santa Barbara",  year: "2017", note: "One of largest by acreage · 281,000 acres" },
     { date: "20130820", name: "Rim Fire",                location: "Tuolumne County",          year: "2013", note: "255,000 acres · Threatened Yosemite" },
@@ -1466,7 +1516,7 @@
     if (val == null)    return 'No data';
     if (val <= 9.0)     return 'Good';
     if (val <= 35.4)    return 'Moderate';
-    if (val <= 55.4)    return 'USG*';
+    if (val <= 55.4)    return 'Sensitive Groups';
     if (val <= 150.4)   return 'Unhealthy';
     if (val <= 250.4)   return 'Very Unhealthy';
     return 'Hazardous';
@@ -1494,13 +1544,14 @@
     document.getElementById('panel-badges').innerHTML =
       worstBadge +
       `<div class="pm25-card ${cls}">` +
-        `<div class="pm25-card-label">Particulate Matter PM2.5</div>` +
+        `<div class="pm25-card-label">Fine Particle Pollution (PM2.5)</div>` +
         `<div class="pm25-card-row">` +
           `<span class="pm25-number" id="pm25-num">${num}</span>` +
           `<span class="pm25-unit">µg/m³</span>` +
           `<span class="pm25-severity">${lbl}</span>` +
         `</div>` +
         `<div class="pm25-bar"></div>` +
+        `<div class="pm25-mean-note">Daily average across all monitors in this county (mean)</div>` +
       `</div>`;
 
     // Animate count-up
@@ -1519,11 +1570,11 @@
     }
 
     document.getElementById('narrative-output').innerHTML = '';
-    document.getElementById('story-btn').style.display = 'block';
     document.getElementById('chat-section').style.display = 'none';
     document.getElementById('chat-history').innerHTML = '';
 
     document.getElementById('side-panel').classList.add('county-open');
+    generateStory();
   }
 
   function closePanel() {
@@ -1558,12 +1609,36 @@
   }
 
   // ── Generate story ────────────────────────────────────────
+  let _narrativeInterval = null;
+
   async function generateStory() {
     if (!currentCounty) return;
-    const btn = document.getElementById('story-btn');
     const out = document.getElementById('narrative-output');
-    btn.disabled = true;
-    out.innerHTML = `<div class="narrative-loading"><div class="spinner"></div>Generating narrative…</div>`;
+
+    // Clear any previous interval
+    if (_narrativeInterval) { clearInterval(_narrativeInterval); _narrativeInterval = null; }
+
+    // Animated loading stages
+    const stages = [
+      'Reading satellite data…',
+      'Fetching news context…',
+      'Analyzing air quality…',
+      'Writing your story…',
+    ];
+    let stageIdx = 0;
+    out.style.opacity = '1';
+    out.innerHTML = `<div class="narrative-stage-loading" id="stage-msg">${stages[0]}</div>`;
+    const stageEl = document.getElementById('stage-msg');
+
+    _narrativeInterval = setInterval(() => {
+      if (!stageEl) return;
+      stageEl.style.opacity = '0';
+      setTimeout(() => {
+        stageIdx = (stageIdx + 1) % stages.length;
+        stageEl.textContent = stages[stageIdx];
+        stageEl.style.opacity = '1';
+      }, 300);
+    }, 1800);
 
     try {
       const date = getDate();
@@ -1579,6 +1654,7 @@
       currentCounty = { ...currentCounty, ...data };
 
       let html = `<div class="narrative-text">${escHtml(data.narrative || '')}</div>`;
+      html += `<div style="text-align:center;margin-top:14px;font-family:'DM Mono',monospace;font-size:0.6rem;color:rgba(255,255,255,0.3);letter-spacing:0.08em;">Narrative generated by Claude AI · Based on satellite and sensor data</div>`;
 
       if (newsRes.ok) {
         const newsData = await newsRes.json();
@@ -1610,13 +1686,32 @@
         }
       }
 
-      out.innerHTML = html;
-      document.getElementById('chat-section').style.display = 'block';
-      btn.textContent = 'Generate Story';
+      clearInterval(_narrativeInterval); _narrativeInterval = null;
+      out.style.opacity = '0';
+      setTimeout(() => {
+        out.innerHTML = html;
+        out.style.opacity = '1';
+        document.getElementById('chat-section').style.display = 'block';
+      }, 300);
+
     } catch (e) {
-      out.innerHTML = `<div style="color:#f87171;font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:0.06em;">Error: ${escHtml(e.message)}</div>`;
-    } finally {
-      btn.disabled = false;
+      clearInterval(_narrativeInterval); _narrativeInterval = null;
+      const m = e.message || '';
+      let msg = 'Something went wrong. Please try again.';
+      if (m.includes('404'))
+        msg = 'No data available for this county on this date. Try a nearby date.';
+      else if (m.includes('500') || m.includes('503'))
+        msg = 'Story generator is temporarily unavailable. Please try again.';
+      else if (m.toLowerCase().includes('failed to fetch') || m.toLowerCase().includes('networkerror'))
+        msg = 'Unable to connect. Check your internet connection.';
+      out.style.opacity = '1';
+      out.innerHTML =
+        `<div style="padding:12px 0;">` +
+          `<div style="color:#f87171;font-family:'DM Sans',sans-serif;font-size:0.82rem;line-height:1.6;">${escHtml(msg)}</div>` +
+          `<button onclick="generateStory()" style="margin-top:14px;background:transparent;border:1px solid var(--amber);` +
+            `color:var(--amber);font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;` +
+            `text-transform:uppercase;padding:7px 18px;cursor:pointer;">Retry</button>` +
+        `</div>`;
     }
   }
 
@@ -1645,7 +1740,12 @@
       const data = await res.json();
       document.getElementById(id).innerHTML = escHtml(data.answer);
     } catch(e) {
-      document.getElementById(id).innerHTML = `<span style="color:#f87171">Error: ${escHtml(e.message)}</span>`;
+      const cm = e.message || '';
+      let chatErr = 'Something went wrong. Please try again.';
+      if (cm.includes('404')) chatErr = 'No data available for this county.';
+      else if (cm.includes('500') || cm.includes('503')) chatErr = 'Service temporarily unavailable. Please try again.';
+      else if (cm.toLowerCase().includes('failed to fetch') || cm.toLowerCase().includes('networkerror')) chatErr = 'Unable to connect. Check your internet connection.';
+      document.getElementById(id).innerHTML = `<span style="color:#f87171;font-family:'DM Sans',sans-serif;font-size:0.82rem;">${escHtml(chatErr)}</span>`;
     } finally {
       input.disabled = false;
       input.focus();
@@ -1671,6 +1771,10 @@
     const date = explicitDate || getDate();
     console.log('[MAP] Loading all layers for date:', date);
     closePanel();
+
+    // Show historic date banner only for the Palisades default date
+    const banner = document.getElementById('historic-banner');
+    if (banner) banner.style.display = (date === '20250109') ? 'block' : 'none';
     const tsList = document.getElementById('top-stories-list');
     if (tsList) tsList.innerHTML = '<div class="top-story-empty">Loading…</div>';
 
@@ -1720,6 +1824,12 @@
         }),
         onEachFeature: (feat, lyr) => {
           featureLayers.push({ feat, lyr });
+          const tipName = feat.properties.county_name || 'Unknown';
+          const tipPm25 = feat.properties.pm25_mean;
+          const tipContent = tipPm25 != null
+            ? `${tipName} County — ${tipPm25.toFixed(1)} µg/m³ · ${pm25Label(tipPm25)}`
+            : `${tipName} County — No data`;
+          lyr.bindTooltip(tipContent, { permanent: false, direction: 'top', sticky: true });
           lyr.on('click', () => openPanel(feat.properties));
           lyr.on('mouseover', function() {
             this.setStyle({ weight: 1.5, color: '#f97316' });
@@ -1850,7 +1960,7 @@
     const tip = document.getElementById('onboarding-tip');
     tip.classList.remove('fade-out');
     tip.classList.add('visible');
-    setTimeout(dismissOnboardingTip, 5000);
+    setTimeout(dismissOnboardingTip, 10000);
   }
 
   function dismissOnboardingTip() {
@@ -1909,6 +2019,10 @@
     if (!btn.contains(e.target) && !drop.contains(e.target)) {
       closeEventsPanel();
     }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && eventsOpen) closeEventsPanel();
   });
 
   // ── Init ──────────────────────────────────────────────────
