@@ -412,6 +412,12 @@
       min-width: 186px;
     }
 
+    /* Push zoom control above the layers panel */
+    .leaflet-bottom.leaflet-left .leaflet-control-zoom {
+      margin-bottom: 190px;
+      margin-left: 20px;
+    }
+
     .ctrl-title {
       font-family: var(--mono);
       font-size: 0.58rem;
@@ -1255,21 +1261,21 @@
     <span class="layer-dot" style="background:#f97316;opacity:0.85;"></span>
     <label for="chk-pm25">PM2.5 Counties</label>
     <button class="info-btn" onclick="showInfo('info-pm25',event)" title="About this layer">ⓘ</button>
-    <div class="info-tooltip" id="info-pm25">Ground-level fine particle pollution measured by EPA Air Quality System (AQS) monitors. Data represents daily average readings in µg/m³. Source: U.S. Environmental Protection Agency. Updated daily.</div>
+    <div class="info-tooltip" id="info-pm25">Color shows daily average fine particle pollution (PM2.5) measured by EPA ground monitors across California's 58 counties.<br/>Fine particles are tiny pieces of dust, smoke, and pollution small enough to enter your lungs. Higher levels cause breathing problems, especially for children, elderly, and people with heart or lung conditions.<br/>🟢 Good (0–12): Air is clean. Safe for everyone.<br/>🟡 Moderate (12–35): Unusually sensitive people may be affected.<br/>🟠 Unhealthy for Sensitive Groups (35–55): Children, elderly, and those with heart/lung conditions should limit outdoor time.<br/>🔴 Unhealthy (55–150): Everyone may begin to experience health effects.<br/>🟣 Hazardous (150+): Health alert — everyone should avoid outdoor activity.<br/>Source: U.S. EPA Air Quality System (AQS). Updated daily.</div>
   </div>
   <div class="layer-row">
     <input type="checkbox" id="chk-smoke" checked onchange="toggleLayer('smoke')" />
     <span class="layer-dot" style="background:#fb923c;opacity:0.65;"></span>
     <label for="chk-smoke">Smoke Plumes</label>
     <button class="info-btn" onclick="showInfo('info-smoke',event)" title="About this layer">ⓘ</button>
-    <div class="info-tooltip" id="info-smoke">Smoke plume polygons manually analyzed by NOAA meteorologists from GOES satellite imagery. Classified as Light, Medium, or Heavy density. Does not always reflect ground-level air quality — smoke may be aloft. Source: NOAA Hazard Mapping System (HMS). Updated daily.</div>
+    <div class="info-tooltip" id="info-smoke">Smoke plume boundaries drawn by NOAA meteorologists from GOES satellite imagery. Darker shading means denser smoke:<br/>○ Light smoke — hazy conditions, air quality may be slightly reduced<br/>◑ Medium smoke — clearly visible smoke, sensitive groups may be affected<br/>● Heavy smoke — thick smoke, unhealthy air quality likely at ground level<br/>Note: smoke shown here is in the atmosphere and may not always reach ground level. Check PM2.5 Counties layer for actual air quality impact.<br/>Source: NOAA Hazard Mapping System (HMS). Updated daily.</div>
   </div>
   <div class="layer-row">
     <input type="checkbox" id="chk-fires" checked onchange="toggleLayer('fires')" />
     <span class="layer-dot" style="background:#ef4444;"></span>
     <label for="chk-fires">Active Fires</label>
     <button class="info-btn" onclick="showInfo('info-fires',event)" title="About this layer">ⓘ</button>
-    <div class="info-tooltip" id="info-fires">Active fire detections from the VIIRS sensor on the Suomi-NPP satellite. Each dot represents a 375m pixel flagged as containing fire. Circle size reflects Fire Radiative Power (FRP) — a measure of fire intensity in megawatts. Source: NASA FIRMS Near Real-Time data. Updated within 3 hours of satellite overpass.</div>
+    <div class="info-tooltip" id="info-fires">Each flame icon marks a location where NASA's VIIRS satellite detected active fire in the last 24 hours. Flame size shows fire intensity:<br/>🔥 Small flame — low intensity (under 2 MW): campfire or small brush fire<br/>🔥🔥 Medium flame — moderate intensity (2–10 MW): active vegetation fire<br/>🔥🔥🔥 Large flame — high intensity (10+ MW): major wildfire<br/>Source: NASA FIRMS Near Real-Time data. Updated within 3 hours of satellite overpass.</div>
   </div>
 </div>
 
@@ -1397,7 +1403,7 @@
     maxZoom: 19,
   }).addTo(map);
 
-  L.control.zoom({ position: 'topleft' }).addTo(map);
+  L.control.zoom({ position: 'bottomleft' }).addTo(map);
   map.on('click', dismissOnboardingTip); // any map click dismisses onboarding
 
   // ── Layer state ───────────────────────────────────────────
@@ -1433,28 +1439,28 @@
   // ── PM2.5 color scale ─────────────────────────────────────
   function pm25Color(val) {
     if (val == null) return '#1a1a2e';
-    if (val <= 12)  return '#22c55e';
-    if (val <= 35)  return '#eab308';
-    if (val <= 55)  return '#f97316';
-    if (val <= 150) return '#ef4444';
+    if (val < 12)   return '#22c55e';
+    if (val < 35)   return '#eab308';
+    if (val < 55)   return '#f97316';
+    if (val < 150)  return '#ef4444';
     return '#7c3aed';
   }
 
   function pm25BadgeClass(val) {
     if (val == null) return 'badge-nodata';
-    if (val <= 12)  return 'badge-good';
-    if (val <= 35)  return 'badge-moderate';
-    if (val <= 55)  return 'badge-usg';
-    if (val <= 150) return 'badge-unhealthy';
+    if (val < 12)   return 'badge-good';
+    if (val < 35)   return 'badge-moderate';
+    if (val < 55)   return 'badge-usg';
+    if (val < 150)  return 'badge-unhealthy';
     return 'badge-hazardous';
   }
 
   function pm25Label(val) {
     if (val == null) return 'No data';
-    if (val <= 12)  return 'Good';
-    if (val <= 35)  return 'Moderate';
-    if (val <= 55)  return 'USG*';
-    if (val <= 150) return 'Unhealthy';
+    if (val < 12)   return 'Good';
+    if (val < 35)   return 'Moderate';
+    if (val < 55)   return 'USG*';
+    if (val < 150)  return 'Unhealthy';
     return 'Hazardous';
   }
 
@@ -1814,12 +1820,10 @@
         },
         onEachFeature: (feat, lyr) => {
           const frp = feat.properties?.frp;
-          const bright = feat.properties?.brightness;
           lyr.bindPopup(
             `<div style="font-family:'DM Mono',monospace;font-size:0.72rem;line-height:1.8;letter-spacing:0.06em;">
               <b style="font-size:0.8rem;color:#ff6b00;">&#128293; ACTIVE FIRE</b><br/>
-              ${frp != null ? `INTENSITY: <b style="color:#ff6b00">${Number(frp).toFixed(1)} MW</b><br/>` : ''}
-              ${bright != null ? `BRIGHTNESS: <b style="color:#fbbf24">${Number(bright).toFixed(0)}K</b>` : ''}
+              ${frp != null ? `INTENSITY: <b style="color:#ff6b00">${Number(frp).toFixed(1)} MW</b>` : ''}
             </div>`,
             { className: 'fire-popup' }
           );
