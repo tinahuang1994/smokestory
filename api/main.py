@@ -61,11 +61,10 @@ def validate_date(date_str: str):
 
 def check_data_quality(county_data):
     pm25 = county_data.get("pm25_mean")
-    smoke = county_data.get("smoke_density")
-    has_smoke = county_data.get("has_smoke")
+    has_smoke = county_data.get("has_smoke") or False
 
     if has_smoke and pm25 is not None and pm25 < 15:
-        return "⚠️ Data quality notice: Smoke is detected over this county but PM2.5 readings are unusually low. EPA monitors sometimes go offline during major fire events (evacuations, power outages), which can produce misleadingly low readings. This data may not reflect actual conditions. Cross-reference with AirNow.gov for this date."
+        return "⚠️ Data quality notice: Smoke is detected over this county but PM2.5 readings are unusually low. EPA monitors sometimes go offline during major fire events due to evacuations or power outages, producing misleadingly low readings. This data may not reflect actual conditions. Cross-reference with AirNow.gov for this date."
     if has_smoke and pm25 is None:
         return "⚠️ No ground monitor data available for this county on this date. Smoke is present per satellite data. Check AirNow.gov for historical air quality information."
     return None

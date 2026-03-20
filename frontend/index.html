@@ -1615,9 +1615,13 @@
 
   // ── Generate story ────────────────────────────────────────
   let _narrativeInterval = null;
+  let narrativeRequestId = 0;
 
   async function generateStory() {
     if (!currentCounty) return;
+    const countyName = currentCounty?.NAME || currentCounty?.county_name;
+    const capturedDate = getDate();
+    const myRequestId = ++narrativeRequestId;
     const out = document.getElementById('narrative-output');
 
     // Clear any previous interval
@@ -1646,12 +1650,12 @@
     }, 1800);
 
     try {
-      const date = getDate();
-      const name = encodeURIComponent(currentCounty.county_name);
+      const name = encodeURIComponent(countyName);
+      console.log('[generateStory] county:', countyName, '| date:', capturedDate, '| API URL:', `${API}/county/06/${name}/${capturedDate}`);
 
       const [storyRes, newsRes] = await Promise.all([
-        fetch(`${API}/county/06/${name}/${date}`),
-        fetch(`${API}/news/${name}/${date}`),
+        fetch(`${API}/county/06/${name}/${capturedDate}`),
+        fetch(`${API}/news/${name}/${capturedDate}`),
       ]);
 
       if (!storyRes.ok) {
@@ -1659,11 +1663,13 @@
         throw new Error(`HTTP ${storyRes.status}::${errBody.detail || ''}`);
       }
       const data = await storyRes.json();
-      console.log('API response:', data);
+      console.log('[generateStory] full API response:', data);
+      console.log('[generateStory] data_quality_warning:', data.data_quality_warning, '| exists:', 'data_quality_warning' in data);
       currentCounty = { ...currentCounty, ...data };
 
       // Show data quality warning if present
       const dqWarn = document.getElementById('panel-dq-warning');
+      console.log('[generateStory] #panel-dq-warning element:', dqWarn);
       if (dqWarn) {
         if (data.data_quality_warning) {
           dqWarn.textContent = data.data_quality_warning;
@@ -1706,6 +1712,8 @@
             `</div>`;
         }
       }
+
+      if (myRequestId !== narrativeRequestId) return; // stale response, discard
 
       clearInterval(_narrativeInterval); _narrativeInterval = null;
       out.style.opacity = '0';
