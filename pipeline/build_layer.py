@@ -188,7 +188,7 @@ def build_county_layer(state_code, date):
         if "county_code" in df_pm25.columns and "arithmetic_mean" in df_pm25.columns:
             pm25_by_county = (
                 df_pm25.groupby("county_code")["arithmetic_mean"]
-                .mean()
+                .max()
                 .to_dict()
             )
 

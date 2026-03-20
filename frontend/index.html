@@ -823,31 +823,35 @@
 
     .pm25-bar { height: 2px; width: 100%; margin-top: 2px; }
 
-    .pm25-card.badge-good     { border-color: rgba(34,197,94,0.18); }
-    .pm25-card.badge-moderate { border-color: rgba(234,179,8,0.18); }
-    .pm25-card.badge-usg      { border-color: rgba(249,115,22,0.22); }
-    .pm25-card.badge-unhealthy{ border-color: rgba(239,68,68,0.22); }
-    .pm25-card.badge-hazardous{ border-color: rgba(168,85,247,0.22); }
+    .pm25-card.badge-good          { border-color: rgba(34,197,94,0.18); }
+    .pm25-card.badge-moderate      { border-color: rgba(234,179,8,0.18); }
+    .pm25-card.badge-usg           { border-color: rgba(249,115,22,0.22); }
+    .pm25-card.badge-unhealthy     { border-color: rgba(239,68,68,0.22); }
+    .pm25-card.badge-very-unhealthy{ border-color: rgba(168,85,247,0.22); }
+    .pm25-card.badge-hazardous     { border-color: rgba(126,34,206,0.22); }
     .pm25-card.badge-nodata   { border-color: var(--border); }
 
     .pm25-card.badge-good .pm25-number,
-    .pm25-card.badge-good .pm25-severity      { color: #22c55e; }
+    .pm25-card.badge-good .pm25-severity           { color: #22c55e; }
     .pm25-card.badge-moderate .pm25-number,
-    .pm25-card.badge-moderate .pm25-severity  { color: #eab308; }
+    .pm25-card.badge-moderate .pm25-severity       { color: #eab308; }
     .pm25-card.badge-usg .pm25-number,
-    .pm25-card.badge-usg .pm25-severity       { color: #f97316; }
+    .pm25-card.badge-usg .pm25-severity            { color: #f97316; }
     .pm25-card.badge-unhealthy .pm25-number,
-    .pm25-card.badge-unhealthy .pm25-severity { color: #ef4444; }
+    .pm25-card.badge-unhealthy .pm25-severity      { color: #ef4444; }
+    .pm25-card.badge-very-unhealthy .pm25-number,
+    .pm25-card.badge-very-unhealthy .pm25-severity { color: #a855f7; }
     .pm25-card.badge-hazardous .pm25-number,
-    .pm25-card.badge-hazardous .pm25-severity { color: #a855f7; }
-    .pm25-card.badge-nodata .pm25-number      { color: var(--text-muted); }
+    .pm25-card.badge-hazardous .pm25-severity      { color: #7e22ce; }
+    .pm25-card.badge-nodata .pm25-number           { color: var(--text-muted); }
 
-    .pm25-card.badge-good .pm25-bar      { background: #22c55e; }
-    .pm25-card.badge-moderate .pm25-bar  { background: #eab308; }
-    .pm25-card.badge-usg .pm25-bar       { background: #f97316; }
-    .pm25-card.badge-unhealthy .pm25-bar { background: #ef4444; }
-    .pm25-card.badge-hazardous .pm25-bar { background: #a855f7; }
-    .pm25-card.badge-nodata .pm25-bar    { background: var(--border); }
+    .pm25-card.badge-good .pm25-bar           { background: #22c55e; }
+    .pm25-card.badge-moderate .pm25-bar       { background: #eab308; }
+    .pm25-card.badge-usg .pm25-bar            { background: #f97316; }
+    .pm25-card.badge-unhealthy .pm25-bar      { background: #ef4444; }
+    .pm25-card.badge-very-unhealthy .pm25-bar { background: #a855f7; }
+    .pm25-card.badge-hazardous .pm25-bar      { background: #7e22ce; }
+    .pm25-card.badge-nodata .pm25-bar         { background: var(--border); }
 
     /* ── PANEL BODY ── */
     .panel-body {
@@ -1261,7 +1265,7 @@
     <span class="layer-dot" style="background:#f97316;opacity:0.85;"></span>
     <label for="chk-pm25">PM2.5 Counties</label>
     <button class="info-btn" onclick="showInfo('info-pm25',event)" title="About this layer">ⓘ</button>
-    <div class="info-tooltip" id="info-pm25">Color shows daily average fine particle pollution (PM2.5) measured by EPA ground monitors across California's 58 counties.<br/>Fine particles are tiny pieces of dust, smoke, and pollution small enough to enter your lungs. Higher levels cause breathing problems, especially for children, elderly, and people with heart or lung conditions.<br/>🟢 Good (0–12): Air is clean. Safe for everyone.<br/>🟡 Moderate (12–35): Unusually sensitive people may be affected.<br/>🟠 Unhealthy for Sensitive Groups (35–55): Children, elderly, and those with heart/lung conditions should limit outdoor time.<br/>🔴 Unhealthy (55–150): Everyone may begin to experience health effects.<br/>🟣 Hazardous (150+): Health alert — everyone should avoid outdoor activity.<br/>Source: U.S. EPA Air Quality System (AQS). Updated daily.</div>
+    <div class="info-tooltip" id="info-pm25">Color shows daily maximum fine particle pollution (PM2.5) from EPA ground monitors across California's 58 counties, using the highest monitor reading per county (EPA AQI convention).<br/>Fine particles are tiny pieces of dust, smoke, and pollution small enough to enter your lungs. Higher levels cause breathing problems, especially for children, elderly, and people with heart or lung conditions. The EPA updated its PM2.5 standard in February 2024.<br/>🟢 Good (0–9 µg/m³): Air is clean and safe for everyone.<br/>🟡 Moderate (9–35 µg/m³): Unusually sensitive people may notice effects.<br/>🟠 Unhealthy for Sensitive Groups (35–55 µg/m³): Children, elderly, and those with heart or lung conditions should limit outdoor time.<br/>🔴 Unhealthy (55–150 µg/m³): Everyone may begin to experience health effects.<br/>🟣 Very Unhealthy (150–250 µg/m³): Health alert — serious effects for everyone; avoid prolonged outdoor activity.<br/>🔴 Hazardous (250+ µg/m³): Emergency conditions — entire population at risk; stay indoors.<br/>Source: U.S. EPA Air Quality System (AQS). Updated daily.</div>
   </div>
   <div class="layer-row">
     <input type="checkbox" id="chk-smoke" checked onchange="toggleLayer('smoke')" />
@@ -1282,11 +1286,12 @@
 <!-- LEGEND -->
 <div class="float-panel" id="legend">
   <div class="legend-title">PM2.5 µg/m³</div>
-  <div class="legend-row"><span class="legend-swatch" style="background:#22c55e;"></span>Good (0–12)</div>
-  <div class="legend-row"><span class="legend-swatch" style="background:#eab308;"></span>Moderate (12–35)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#22c55e;"></span>Good (0–9)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#eab308;"></span>Moderate (9–35)</div>
   <div class="legend-row"><span class="legend-swatch" style="background:#f97316;"></span>Unhealthy for Sensitive Groups* (35–55)</div>
   <div class="legend-row"><span class="legend-swatch" style="background:#ef4444;"></span>Unhealthy (55–150)</div>
-  <div class="legend-row"><span class="legend-swatch" style="background:#7c3aed;"></span>Hazardous (150+)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#a855f7;"></span>Very Unhealthy (150–250)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#7e22ce;"></span>Hazardous (250+)</div>
   <div class="legend-row"><span class="legend-swatch" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);"></span>No data</div>
   <div class="legend-footnote">* Sensitive groups include children, elderly, and those with heart or lung conditions</div>
 </div>
@@ -1438,29 +1443,32 @@
 
   // ── PM2.5 color scale ─────────────────────────────────────
   function pm25Color(val) {
-    if (val == null) return '#1a1a2e';
-    if (val < 12)   return '#22c55e';
-    if (val < 35)   return '#eab308';
-    if (val < 55)   return '#f97316';
-    if (val < 150)  return '#ef4444';
-    return '#7c3aed';
+    if (val == null)    return '#1a1a2e';
+    if (val <= 9.0)     return '#22c55e';
+    if (val <= 35.4)    return '#eab308';
+    if (val <= 55.4)    return '#f97316';
+    if (val <= 150.4)   return '#ef4444';
+    if (val <= 250.4)   return '#a855f7';
+    return '#7e22ce';
   }
 
   function pm25BadgeClass(val) {
-    if (val == null) return 'badge-nodata';
-    if (val < 12)   return 'badge-good';
-    if (val < 35)   return 'badge-moderate';
-    if (val < 55)   return 'badge-usg';
-    if (val < 150)  return 'badge-unhealthy';
+    if (val == null)    return 'badge-nodata';
+    if (val <= 9.0)     return 'badge-good';
+    if (val <= 35.4)    return 'badge-moderate';
+    if (val <= 55.4)    return 'badge-usg';
+    if (val <= 150.4)   return 'badge-unhealthy';
+    if (val <= 250.4)   return 'badge-very-unhealthy';
     return 'badge-hazardous';
   }
 
   function pm25Label(val) {
-    if (val == null) return 'No data';
-    if (val < 12)   return 'Good';
-    if (val < 35)   return 'Moderate';
-    if (val < 55)   return 'USG*';
-    if (val < 150)  return 'Unhealthy';
+    if (val == null)    return 'No data';
+    if (val <= 9.0)     return 'Good';
+    if (val <= 35.4)    return 'Moderate';
+    if (val <= 55.4)    return 'USG*';
+    if (val <= 150.4)   return 'Unhealthy';
+    if (val <= 250.4)   return 'Very Unhealthy';
     return 'Hazardous';
   }
 
