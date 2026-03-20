@@ -10,11 +10,28 @@ load_dotenv()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 
+def get_severity_label(pm25):
+    if pm25 is None:
+        return "Unknown"
+    if pm25 < 12:
+        return "Good"
+    elif pm25 < 35:
+        return "Moderate"
+    elif pm25 < 55:
+        return "Unhealthy for Sensitive Groups"
+    elif pm25 < 150:
+        return "Unhealthy"
+    else:
+        return "Hazardous"
+
+
 def generate_narrative(county_data, date=None):
     county_name = county_data.get("county_name", "Unknown County")
     pm25_mean = county_data.get("pm25_mean")
     smoke_density = county_data.get("smoke_density")
     has_smoke = county_data.get("has_smoke", False)
+
+    severity = get_severity_label(pm25_mean)
 
     if has_smoke and smoke_density:
         smoke_info = f"Smoke is present with {smoke_density.lower()} density."
@@ -22,7 +39,7 @@ def generate_narrative(county_data, date=None):
         smoke_info = "No smoke is currently detected in this area."
 
     if pm25_mean is not None:
-        pm25_info = f"{pm25_mean:.2f} µg/m³ (daily average from EPA ground monitors)"
+        pm25_info = f"{pm25_mean:.2f} µg/m³ — classified as {severity} by EPA standards"
     else:
         pm25_info = "No ground-based PM2.5 monitor data available"
 
@@ -49,6 +66,8 @@ Location: {county_name} County, California
 Date: {formatted_date}
 PM2.5 level: {pm25_info}
 Smoke: {smoke_info}
+
+IMPORTANT: The PM2.5 level is classified as {severity}. Use this exact classification in your narrative — do not reclassify the air quality based on your own judgment.
 
 {news_section}
 Write a 4-sentence narrative that:
