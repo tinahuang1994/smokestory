@@ -11,7 +11,6 @@ SmokeStory turns raw environmental data into plain-English stories. Every day, f
 - **Interactive map** — overlays PM2.5 air quality by county, NOAA satellite smoke plumes, and NASA active fire detections on a single dark-mode Leaflet canvas
 - **AI narratives** — click any California county to generate a 4-sentence journalistic narrative powered by Claude, grounded in that day's actual sensor data
 - **Historic events** — a curated dropdown of California's most significant wildfire events (Camp Fire, Dixie Fire, Palisades Fire, and more) loads the exact date with one click
-- **Chat assistant** — ask follow-up questions about a county's air quality in plain English; answers stay grounded in the local data context
 - **News integration** — Guardian API headlines from the same date are woven into every narrative and surfaced as source links in the panel
 
 ---
