@@ -935,83 +935,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .chat-divider {
-      height: 1px;
-      background: var(--border);
-      flex-shrink: 0;
-    }
-
-    .chat-label {
-      font-family: var(--mono);
-      font-size: 0.58rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
-
-    #chat-history {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 260px;
-      overflow-y: auto;
-      margin-bottom: 14px;
-    }
-    #chat-history::-webkit-scrollbar { width: 2px; }
-    #chat-history::-webkit-scrollbar-thumb { background: var(--amber); }
-
-    .chat-msg {
-      padding: 10px 14px;
-      font-size: 0.85rem;
-      line-height: 1.6;
-      animation: fadeUp 0.35s var(--ease);
-      border-left: 2px solid;
-    }
-    .chat-msg.user {
-      background: rgba(249,115,22,0.06);
-      border-left-color: var(--amber);
-      color: var(--text);
-      font-family: var(--sans);
-      font-weight: 400;
-    }
-    .chat-msg.assistant {
-      background: transparent;
-      border-left-color: var(--border);
-      color: var(--text-dim);
-      font-family: var(--serif);
-      font-style: italic;
-      font-size: 0.98rem;
-      line-height: 1.75;
-    }
-
-    .chat-input-row {
-      display: flex;
-      gap: 0;
-      border-bottom: 1px solid var(--border-amber);
-      transition: border-color 0.4s var(--ease);
-    }
-    .chat-input-row:focus-within { border-bottom-color: var(--amber); }
-    .chat-input-row input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--text);
-      font-family: var(--sans);
-      font-weight: 300;
-      font-size: 0.82rem;
-      padding: 10px 0;
-      outline: none;
-    }
-    .chat-input-row input::placeholder { color: var(--text-muted); font-style: italic; }
-    .chat-input-row .btn {
-      border: none;
-      border-left: 1px solid var(--border-amber);
-      padding: 8px 14px;
-      font-size: 0.62rem;
-    }
-    .chat-input-row .btn:hover { box-shadow: none; border-left-color: var(--amber); }
-
     /* ── LEAFLET POPUP DARK THEME ── */
     .leaflet-popup-content-wrapper {
       background: rgba(4,4,10,0.97);
@@ -1097,8 +1020,6 @@
       z-index: 9999;
       box-shadow: 0 8px 40px rgba(0,0,0,0.7);
       pointer-events: none;
-      max-height: 55vh;
-      overflow-y: auto;
     }
     .info-tooltip.visible { display: block; animation: fadeUp 0.2s var(--ease); }
 
@@ -1298,15 +1219,6 @@
       <div id="narrative-area">
         <div id="narrative-output"></div>
       </div>
-      <div class="chat-divider"></div>
-      <div id="chat-section" style="display:none;">
-        <div class="chat-label">Ask About This County</div>
-        <div id="chat-history"></div>
-        <div class="chat-input-row">
-          <input type="text" id="chat-input" placeholder="e.g. Is it safe to go outside? How does this compare to last year?" onkeydown="if(event.key==='Enter')sendChat()" />
-          <button class="btn" onclick="sendChat()">Ask</button>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1320,7 +1232,7 @@
     <span class="layer-dot" style="background:#f97316;opacity:0.85;"></span>
     <label for="chk-pm25">PM2.5 Counties</label>
     <button class="info-btn" onclick="showInfo('info-pm25',event)" title="About this layer">ⓘ</button>
-    <div class="info-tooltip" id="info-pm25">Color shows daily maximum fine particle pollution (PM2.5) from EPA ground monitors across California's 58 counties, using the highest monitor reading per county (EPA AQI convention).<br/>Fine particles are tiny pieces of dust, smoke, and pollution small enough to enter your lungs. Higher levels cause breathing problems, especially for children, elderly, and people with heart or lung conditions. The EPA updated its PM2.5 standard in February 2024.<br/>🟢 Good (0–9 µg/m³): Air is clean and safe for everyone.<br/>🟡 Moderate (9–35 µg/m³): Unusually sensitive people may notice effects.<br/>🟠 Unhealthy for Sensitive Groups (35–55 µg/m³): Children, elderly, and those with heart or lung conditions should limit outdoor time.<br/>🔴 Unhealthy (55–150 µg/m³): Everyone may begin to experience health effects.<br/>🟣 Very Unhealthy (150–250 µg/m³): Health alert — serious effects for everyone; avoid prolonged outdoor activity.<br/>🔴 Hazardous (250+ µg/m³): Emergency conditions — entire population at risk; stay indoors.<br/>Source: U.S. EPA Air Quality System (AQS). Updated daily.<br/><em style="color:var(--text-muted);font-size:0.6rem;">Daily average across all monitors in this county (mean)</em></div>
+    <div class="info-tooltip" id="info-pm25">PM2.5 is fine particle pollution from smoke, dust and vehicle emissions. Higher levels harm your lungs.<br/><br/>Shows daily mean across all EPA monitors in the county. EPA updated its standard in February 2024.<br/><br/>🟢 Good (0–9): Safe for everyone<br/>🟡 Moderate (9–35): Sensitive people may notice effects<br/>🟠 Sensitive Groups (35–55): Children, elderly, heart/lung patients should limit outdoor time<br/>🔴 Unhealthy (55–150): Everyone may be affected<br/>🟣 Very Unhealthy (150–250): Avoid outdoor activity<br/>⚫ Hazardous (250+): Stay indoors<br/><br/>Source: EPA AQS. Updated daily.</div>
   </div>
   <div class="layer-row">
     <input type="checkbox" id="chk-smoke" checked onchange="toggleLayer('smoke')" />
@@ -1573,8 +1485,6 @@
     }
 
     document.getElementById('narrative-output').innerHTML = '';
-    document.getElementById('chat-section').style.display = 'none';
-    document.getElementById('chat-history').innerHTML = '';
     const dqWarn = document.getElementById('panel-dq-warning');
     if (dqWarn) { dqWarn.style.display = 'none'; dqWarn.innerHTML = ''; }
 
@@ -1720,7 +1630,6 @@
       setTimeout(() => {
         out.innerHTML = html;
         out.style.opacity = '1';
-        document.getElementById('chat-section').style.display = 'block';
       }, 300);
 
     } catch (e) {
@@ -1743,44 +1652,6 @@
             `color:var(--amber);font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;` +
             `text-transform:uppercase;padding:7px 18px;cursor:pointer;">Retry</button>` +
         `</div>`;
-    }
-  }
-
-  // ── Chat ──────────────────────────────────────────────────
-  async function sendChat() {
-    const input = document.getElementById('chat-input');
-    const q = input.value.trim();
-    if (!q || !currentCounty) return;
-
-    const hist = document.getElementById('chat-history');
-    hist.innerHTML += `<div class="chat-msg user">${escHtml(q)}</div>`;
-    input.value = '';
-    input.disabled = true;
-
-    const id = 'msg-' + Date.now();
-    hist.innerHTML += `<div class="chat-msg assistant" id="${id}"><span class="spinner" style="display:inline-block;width:12px;height:12px;vertical-align:middle;margin-right:6px;border-width:1px;"></span>Thinking…</div>`;
-    hist.scrollTop = hist.scrollHeight;
-
-    try {
-      const res = await fetch(`${API}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, county_data: currentCounty }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      document.getElementById(id).innerHTML = escHtml(data.answer);
-    } catch(e) {
-      const cm = e.message || '';
-      let chatErr = 'Something went wrong. Please try again.';
-      if (cm.includes('404')) chatErr = 'No data available for this county.';
-      else if (cm.includes('500') || cm.includes('503')) chatErr = 'Service temporarily unavailable. Please try again.';
-      else if (cm.toLowerCase().includes('failed to fetch') || cm.toLowerCase().includes('networkerror')) chatErr = 'Unable to connect. Check your internet connection.';
-      document.getElementById(id).innerHTML = `<span style="color:#f87171;font-family:'DM Sans',sans-serif;font-size:0.82rem;">${escHtml(chatErr)}</span>`;
-    } finally {
-      input.disabled = false;
-      input.focus();
-      hist.scrollTop = hist.scrollHeight;
     }
   }
 
