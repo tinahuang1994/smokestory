@@ -211,6 +211,15 @@
       margin-bottom: 6px;
     }
 
+    /* FIX 5: Headline scope label */
+    .headline-scope {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.06em;
+      margin-bottom: 22px;
+    }
+
     .headline-location {
       font-family: var(--sans);
       font-size: 0.75rem;
@@ -225,7 +234,7 @@
       font-family: var(--sans);
       font-size: 0.8rem;
       font-weight: 300;
-      color: var(--text-muted);
+      color: rgba(255,255,255,0.55);
       font-style: italic;
       line-height: 1.65;
       border-left: 3px solid rgba(249,115,22,0.4);
@@ -233,19 +242,26 @@
       text-align: left;
     }
 
-    /* ── SECTION 3: THREE CARDS ── */
+    /* ── SECTION 3: CARDS — FIX 6: Card 1 full width, 2+3 below ── */
     .cards-section {
       margin-bottom: 60px;
     }
 
     .cards-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Row for cards 2 and 3 */
+    .cards-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 20px;
     }
 
     @media (max-width: 768px) {
-      .cards-grid { grid-template-columns: 1fr; }
+      .cards-row { grid-template-columns: 1fr; }
     }
 
     .estimate-card {
@@ -265,6 +281,16 @@
       border-left-color: var(--amber);
     }
 
+    /* FIX 6: Headline card stronger visual weight */
+    .estimate-card--headline {
+      border-left-width: 4px;
+      background: rgba(4,4,10,0.96);
+    }
+    .estimate-card--headline .card-number {
+      font-size: 2.4rem;
+      color: var(--amber-l);
+    }
+
     .card-label {
       font-family: var(--mono);
       font-size: 0.55rem;
@@ -272,6 +298,13 @@
       text-transform: uppercase;
       color: var(--amber);
       opacity: 0.8;
+    }
+
+    /* FIX 7: Badge row for multiple badges */
+    .card-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     .card-badge {
@@ -283,6 +316,11 @@
       padding: 3px 8px;
       border: 1px solid rgba(255,255,255,0.15);
       color: var(--text-muted);
+    }
+
+    .card-badge.amber-outline {
+      border-color: rgba(249,115,22,0.35);
+      color: rgba(249,115,22,0.7);
     }
 
     .card-badge.teal {
@@ -379,6 +417,17 @@
       height: 50vh;
       min-height: 320px;
       border: 1px solid var(--border);
+    }
+
+    /* FIX 4: Map perimeter note */
+    .map-perimeter-note {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.4);
+      font-style: italic;
+      text-align: center;
+      margin-top: 8px;
+      letter-spacing: 0.04em;
     }
 
     .leaflet-control-attribution {
@@ -485,19 +534,19 @@
       font-style: italic;
     }
 
-    /* ── SECTION 6: BOTTOM ── */
+    /* ── SECTION 6: BOTTOM — FIX 3: Disclaimer contrast ── */
     .disclaimer-section {
-      margin-bottom: 40px;
+      margin-bottom: 28px;
       padding: 24px 28px;
-      border: 1px solid var(--border);
-      border-left: 3px solid rgba(255,255,255,0.06);
+      border: 1px solid var(--border-amber);
+      border-left: 3px solid var(--amber);
     }
 
     .disclaimer-text {
       font-family: var(--mono);
-      font-size: 0.58rem;
-      color: var(--text-muted);
-      line-height: 1.8;
+      font-size: 0.62rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.85;
       letter-spacing: 0.04em;
       text-align: center;
     }
@@ -517,16 +566,47 @@
     }
     .methodology-link:hover { opacity: 1; }
 
-    /* ── FOOTER ── */
+    /* FIX 2: Author attribution */
+    .author-attribution {
+      text-align: center;
+      margin-bottom: 28px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.06em;
+    }
+    .author-attribution a {
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .author-attribution a:hover {
+      color: rgba(255,255,255,0.65);
+      border-bottom-color: rgba(255,255,255,0.4);
+    }
+
+    /* ── FOOTER — FIX 1: Separate Claude AI ── */
     .page-footer {
       text-align: center;
       padding: 20px 0;
       font-family: var(--mono);
-      font-size: 0.58rem;
-      color: var(--text-muted);
       letter-spacing: 0.1em;
       text-transform: uppercase;
       border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .page-footer-data {
+      font-size: 0.58rem;
+      color: var(--text-muted);
+    }
+    .page-footer-ai {
+      font-size: 0.5rem;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.08em;
     }
   </style>
 </head>
@@ -558,21 +638,28 @@
 
   <!-- SECTION 2: HEADLINE NUMBER -->
   <div class="headline-section">
-    <div class="headline-number">$36B — $40B</div>
+    <!-- FIX 9: en-dash throughout -->
+    <div class="headline-number">$36B – $40B</div>
     <div class="headline-sub">in property destroyed</div>
-    <div class="headline-location">Palisades + Eaton Fires · Los Angeles County</div>
+    <!-- FIX 5: scope label -->
+    <div class="headline-scope">structures destroyed · Los Angeles County · January 2025 · pre-fire market value</div>
     <div class="headline-note">
       Three independent estimates are shown below. They measure different things and must not be added together.
     </div>
   </div>
 
-  <!-- SECTION 3: THREE CARDS -->
+  <!-- SECTION 3: CARDS — FIX 6: Card 1 full width, Cards 2+3 below -->
   <div class="cards-section">
     <div class="cards-grid">
 
-      <!-- CARD 1 -->
-      <div class="estimate-card">
+      <!-- CARD 1 — full width headline row -->
+      <!-- FIX 6: estimate-card--headline; FIX 7: add badges -->
+      <div class="estimate-card estimate-card--headline">
         <div class="card-label">Estimate 01</div>
+        <div class="card-badges">
+          <div class="card-badge amber-outline">Headline Estimate</div>
+          <div class="card-badge">Property Only — Not Additive</div>
+        </div>
         <div class="card-number">$36B – $40B</div>
         <div class="card-title">Market Value of Destroyed Structures</div>
         <div class="card-desc">The buildings that burned, valued at what they were worth before the fire. Based on CAL FIRE field inspections of every damaged structure.</div>
@@ -587,41 +674,51 @@
         </div>
       </div>
 
-      <!-- CARD 2 -->
-      <div class="estimate-card">
-        <div class="card-label">Estimate 02</div>
-        <div class="card-badge">Separate — Not Additive</div>
-        <div class="card-number">$3.9B</div>
-        <div class="card-title">Nearby Home Values Affected</div>
-        <div class="card-desc">Properties that survived but lost value because of their proximity to the fires. This is a paper loss — not money paid out — and may recover over time.</div>
-        <button class="card-expand-trigger" onclick="toggleDetail(this)">How We Calculated This ↓</button>
-        <div class="card-detail">
-          Researchers studied dozens of California wildfires and found that homes near — but not in — a fire zone typically lose about 2.2% of their value.
-          <br><br>
-          We applied that rate to roughly 75,000 homes within 5 miles of these fires, worth about $175B combined.
-          <div class="card-detail-source">Source: Peer-reviewed study, Landscape and Urban Planning (2024)</div>
-        </div>
-      </div>
+      <!-- CARDS 2 + 3 — side by side row -->
+      <div class="cards-row">
 
-      <!-- CARD 3 -->
-      <div class="estimate-card">
-        <div class="card-label">Estimate 03</div>
-        <div class="card-badge teal">SmokeStory Unique Contribution</div>
-        <div class="card-number">$0.5B – $1.0B</div>
-        <div class="card-title">Health Cost of Smoke</div>
-        <div class="card-desc">4.2 million residents breathed hazardous air for 14 days. This estimates the economic cost: hospital visits, emergency room trips, missed work days, and asthma attacks.</div>
-        <button class="card-expand-trigger" onclick="toggleDetail(this)">How We Calculated This ↓</button>
-        <div class="card-detail">
-          SmokeStory's air quality sensors recorded LA County's air quality during the fires. For 14 days, PM2.5 levels averaged 44.8 µg/m³ — nearly 5 times the safe limit.
-          <br><br>
-          We used the same method the EPA uses to calculate the economic cost of air pollution: counting hospital visits, emergency room trips, missed work days, and asthma attacks caused by the smoke.
-          <br><br>
-          This is a health cost, not a property cost. Do not add to the estimates above.
-          <div class="card-detail-source">Source: EPA BenMAP methodology · SmokeStory PM2.5 data</div>
+        <!-- CARD 2 -->
+        <div class="estimate-card">
+          <div class="card-label">Estimate 02</div>
+          <div class="card-badges">
+            <div class="card-badge">Separate — Not Additive</div>
+          </div>
+          <div class="card-number">$3.9B</div>
+          <div class="card-title">Nearby Home Values Affected</div>
+          <div class="card-desc">Properties that survived but lost value because of their proximity to the fires. This is a paper loss — not money paid out — and may recover over time.</div>
+          <button class="card-expand-trigger" onclick="toggleDetail(this)">How We Calculated This ↓</button>
+          <div class="card-detail">
+            Researchers studied dozens of California wildfires and found that homes near — but not in — a fire zone typically lose about 2.2% of their value.
+            <br><br>
+            We applied that rate to roughly 75,000 homes within 5 miles of these fires, worth about $175B combined.
+            <div class="card-detail-source">Source: Sathaye et al. (2024) · Landscape and Urban Planning</div>
+          </div>
         </div>
-      </div>
 
-    </div>
+        <!-- CARD 3 -->
+        <!-- FIX 7: add "Health Cost — Not Additive" badge; FIX 8: mortality sentence -->
+        <div class="estimate-card">
+          <div class="card-label">Estimate 03</div>
+          <div class="card-badges">
+            <div class="card-badge teal">SmokeStory Unique Contribution</div>
+            <div class="card-badge">Health Cost — Not Additive</div>
+          </div>
+          <div class="card-number">$0.5B – $1.0B</div>
+          <div class="card-title">Health Cost of Smoke</div>
+          <div class="card-desc">4.2 million residents breathed hazardous air for 14 days. This estimates the economic cost: hospital visits, emergency room trips, missed work days, and asthma attacks. This estimate excludes mortality risk and long-term health effects — it is a deliberate lower bound.</div>
+          <button class="card-expand-trigger" onclick="toggleDetail(this)">How We Calculated This ↓</button>
+          <div class="card-detail">
+            SmokeStory's air quality sensors recorded LA County's air quality during the fires. For 14 days, PM2.5 levels averaged 44.8 µg/m³ — nearly 5 times the safe limit.
+            <br><br>
+            We used the EPA BenMAP cost-of-illness method to calculate the economic cost of air pollution: counting hospital visits, emergency room trips, missed work days, and asthma attacks caused by the smoke.
+            <br><br>
+            This is a health cost, not a property cost. Do not add to the estimates above.
+            <div class="card-detail-source">Source: EPA BenMAP TSD (2023) · SmokeStory PM2.5 data · EPA AQS January 2025</div>
+          </div>
+        </div>
+
+      </div><!-- end cards-row -->
+    </div><!-- end cards-grid -->
   </div>
 
   <!-- SECTION 4: MAP -->
@@ -629,12 +726,14 @@
     <div class="section-title">Fire Perimeters &amp; Air Quality</div>
     <div class="section-subtitle">January 9, 2025 · Los Angeles County</div>
     <div id="impact-map"></div>
+    <!-- FIX 4: Perimeter approximation notice -->
+    <div class="map-perimeter-note">Fire perimeter boundaries are approximate polygons for visualization. Source: CAL FIRE FRAP.</div>
   </div>
 
   <!-- SECTION 5: COMPARISON -->
   <div class="comparison-section">
     <div class="section-title">How This Compares to Other Estimates</div>
-    <div class="section-subtitle">Published Estimates from Independent Sources</div>
+    <div class="section-subtitle">Published Estimates from Independent Sources · Estimate 01 Shown for Comparison Only</div>
 
     <div class="bar-chart">
 
@@ -651,7 +750,8 @@
       <div class="bar-row">
         <div class="bar-label">
           <span class="bar-name">Milliman (insured only)</span>
-          <span class="bar-value">$25B – $39B</span>
+          <!-- FIX 9: Milliman range corrected to match methodology -->
+          <span class="bar-value">$25.2B – $39.4B</span>
         </div>
         <div class="bar-track">
           <div class="bar-fill" style="width:25%;"></div>
@@ -660,7 +760,7 @@
 
       <div class="bar-row">
         <div class="bar-label highlighted">
-          <span class="bar-name">SmokeStory Estimate (market value, incl. uninsured)</span>
+          <span class="bar-name">SmokeStory Estimate 01 (market value, incl. uninsured)</span>
           <span class="bar-value">$36B – $40B</span>
         </div>
         <div class="bar-track">
@@ -682,23 +782,30 @@
 
     <p class="chart-note">
       Moody's and Milliman measure insured losses only. UCLA Anderson measures total property and capital losses.
-      Our Estimate 01 measures market value of destroyed structures including uninsured losses — a different but compatible scope.
+      SmokeStory Estimate 01 measures market value of destroyed structures including uninsured losses — a different but compatible scope. These are not competing estimates; they measure different things.
     </p>
   </div>
 
-  <!-- SECTION 6: BOTTOM -->
+  <!-- SECTION 6: BOTTOM — FIX 3: improved contrast + amber border -->
   <div class="disclaimer-section">
     <div class="disclaimer-text">
-      These three estimates measure different things and must not be added together. All figures are preliminary estimates using public data and established methodology.
-      Data vintage: CAL FIRE February 5, 2025 · CAR 2024 · EPA AQS January 2025.
+      These three estimates measure different things and must not be added together.<br>
+      All figures are preliminary estimates using public data and established methodology.<br>
+      Data vintage: CAL FIRE February 5, 2025 · CAR 2024 · EPA AQS January 2025.<br>
       SmokeStory is an independent open-source project, not an insurance company, government agency, or academic institution.
     </div>
     <a href="/methodology" class="methodology-link">Read Full Methodology →</a>
   </div>
 
-  <!-- FOOTER -->
+  <!-- FIX 2: Author attribution -->
+  <div class="author-attribution">
+    Methodology by Tina Huang &nbsp;·&nbsp; <a href="mailto:tina.huang@aya.yale.edu">tina.huang@aya.yale.edu</a>
+  </div>
+
+  <!-- FIX 1: Footer with Claude AI separated from data sources -->
   <div class="page-footer">
-    Tracking Wildfire Smoke Across California &nbsp;·&nbsp; NOAA HMS &nbsp;·&nbsp; EPA AQS &nbsp;·&nbsp; NASA VIIRS &nbsp;·&nbsp; Claude AI
+    <div class="page-footer-data">Data: NOAA HMS &nbsp;·&nbsp; EPA AQS &nbsp;·&nbsp; NASA VIIRS &nbsp;·&nbsp; CAL FIRE</div>
+    <div class="page-footer-ai">Narratives Powered by Claude AI</div>
   </div>
 
 </div><!-- end page-content -->
@@ -729,7 +836,7 @@
     maxZoom: 19,
   }).addTo(map);
 
-  // ── Fire perimeters (approximate GeoJSON) ─────────────────
+  // ── Fire perimeters (approximate visualization polygons — not survey data) ──
   const firePerimeters = {
     type: 'FeatureCollection',
     features: [
@@ -780,7 +887,7 @@
     },
     onEachFeature: (feat, lyr) => {
       lyr.bindTooltip(
-        `<strong style="color:#ef4444">${feat.properties.name}</strong><br>${feat.properties.acres} acres`,
+        `<strong style="color:#ef4444">${feat.properties.name}</strong><br>${feat.properties.acres} acres (approximate)`,
         { sticky: true }
       );
     }
@@ -834,7 +941,7 @@
 
   // ── Layer control ─────────────────────────────────────────
   const overlays = {
-    'Fire Perimeters': fireLayer,
+    'Fire Perimeters (approx.)': fireLayer,
   };
 
   let layerControl = L.control.layers(null, overlays, { position: 'topright', collapsed: false }).addTo(map);
