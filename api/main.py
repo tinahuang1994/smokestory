@@ -41,6 +41,14 @@ if os.path.exists(frontend_path):
 async def serve_frontend():
     return FileResponse(os.path.join(frontend_path, "index.html"))
 
+@app.get("/impact")
+async def impact_page():
+    return FileResponse(os.path.join(frontend_path, "impact.html"))
+
+@app.get("/methodology")
+async def methodology_page():
+    return FileResponse(os.path.join(frontend_path, "methodology.html"))
+
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 

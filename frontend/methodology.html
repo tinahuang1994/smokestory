@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Full Methodology · SmokeStory</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #04040a;
+      --bg2:          #07070f;
+      --bg3:          #0a0a14;
+      --glass:        rgba(4,4,8,0.92);
+      --border:       rgba(255,255,255,0.07);
+      --border-amber: rgba(249,115,22,0.22);
+      --amber:        #f97316;
+      --amber-l:      #fb923c;
+      --amber-dim:    rgba(249,115,22,0.1);
+      --amber-glow:   rgba(249,115,22,0.2);
+      --text:         #e2e2ea;
+      --text-dim:     #7a7a92;
+      --text-muted:   #40405a;
+      --serif:        'Cormorant Garamond', Georgia, serif;
+      --mono:         'DM Mono', 'Courier New', monospace;
+      --sans:         'DM Sans', system-ui, sans-serif;
+      --header:       56px;
+      --ease:         cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: var(--sans);
+      font-weight: 300;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0.28;
+      mix-blend-mode: overlay;
+    }
+
+    /* ── HEADER ── */
+    #header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header);
+      z-index: 1000;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+    }
+    #header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--amber) 0%, rgba(249,115,22,0.3) 40%, transparent 100%);
+    }
+
+    .logo-accent {
+      width: 2px;
+      height: 26px;
+      background: var(--amber);
+      flex-shrink: 0;
+      opacity: 0.85;
+    }
+
+    .logo-block { display: flex; flex-direction: column; gap: 2px; }
+
+    .logo {
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--amber);
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .tagline {
+      font-family: var(--sans);
+      font-size: 0.58rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .header-spacer { flex: 1; }
+
+    .back-link {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 6px 13px;
+      transition: border-color 0.4s var(--ease), color 0.4s var(--ease), background 0.4s var(--ease);
+      white-space: nowrap;
+    }
+    .back-link:hover {
+      border-color: var(--border-amber);
+      color: var(--amber);
+      background: var(--amber-dim);
+    }
+
+    /* ── PAGE CONTENT ── */
+    .page-content {
+      padding-top: calc(var(--header) + 60px);
+      padding-bottom: 80px;
+      max-width: 800px;
+      margin: 0 auto;
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      margin-bottom: 56px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-title {
+      font-family: var(--serif);
+      font-size: 3.4rem;
+      font-weight: 300;
+      color: #fff;
+      line-height: 1.05;
+      margin-bottom: 14px;
+    }
+
+    .page-module {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 8px;
+    }
+
+    .page-vintage {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ── OVERVIEW BOX ── */
+    .overview-box {
+      background: rgba(249,115,22,0.04);
+      border: 1px solid var(--border-amber);
+      border-left: 3px solid var(--amber);
+      padding: 20px 22px;
+      margin-bottom: 48px;
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: var(--text-dim);
+      line-height: 1.75;
+    }
+
+    /* ── SECTION HEADERS ── */
+    h2 {
+      font-family: var(--serif);
+      font-size: 2rem;
+      font-weight: 300;
+      color: #fff;
+      margin-bottom: 6px;
+      margin-top: 48px;
+      line-height: 1.1;
+    }
+    h2:first-of-type { margin-top: 0; }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--amber);
+      opacity: 0.7;
+      margin-bottom: 22px;
+    }
+
+    /* ── BODY TEXT ── */
+    p {
+      font-family: var(--sans);
+      font-size: 0.88rem;
+      font-weight: 300;
+      color: var(--text-dim);
+      line-height: 1.8;
+      margin-bottom: 14px;
+    }
+
+    .highlight-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-left: 3px solid rgba(249,115,22,0.3);
+      padding: 16px 18px;
+      margin: 18px 0;
+    }
+
+    .highlight-box-title {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 10px;
+      opacity: 0.7;
+    }
+
+    /* ── MONO NUMBERS / CODE ── */
+    .mono-block {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text);
+      line-height: 1.85;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border);
+      padding: 16px 18px;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+
+    .mono-block .dim { color: var(--text-muted); }
+    .mono-block .amber { color: var(--amber); }
+    .mono-block .white { color: #fff; font-weight: 400; }
+
+    /* ── COLLAPSIBLE SUBSECTIONS ── */
+    .collapsible {
+      border: 1px solid var(--border);
+      margin: 16px 0;
+    }
+
+    .collapsible-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.02);
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s;
+    }
+    .collapsible-trigger:hover { background: rgba(255,255,255,0.04); }
+
+    .collapsible-trigger-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .collapsible-arrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+    .collapsible.open .collapsible-arrow { transform: rotate(180deg); }
+
+    .collapsible-body {
+      display: none;
+      padding: 16px 18px;
+      border-top: 1px solid var(--border);
+    }
+    .collapsible.open .collapsible-body { display: block; }
+
+    .collapsible-body p {
+      font-size: 0.82rem;
+      margin-bottom: 10px;
+    }
+    .collapsible-body p:last-child { margin-bottom: 0; }
+
+    .assumption-list {
+      list-style: none;
+      padding: 0;
+    }
+    .assumption-list li {
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: var(--text-dim);
+      line-height: 1.7;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+    }
+    .assumption-list li:last-child { border-bottom: none; }
+    .assumption-list .assumption-id {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--amber);
+      opacity: 0.7;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .limitation-list {
+      list-style: none;
+      padding: 0;
+    }
+    .limitation-list li {
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: var(--text-dim);
+      line-height: 1.7;
+      padding: 6px 0 6px 14px;
+      border-left: 2px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    /* ── DATA SOURCES TABLE ── */
+    .sources-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+    }
+
+    .sources-table th {
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 0.55rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--amber);
+      opacity: 0.7;
+      border-bottom: 1px solid var(--border-amber);
+    }
+
+    .sources-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-dim);
+      line-height: 1.5;
+      vertical-align: top;
+    }
+
+    .sources-table tr:last-child td { border-bottom: none; }
+    .sources-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .sources-table .source-name { color: var(--text); }
+    .sources-table .source-access {
+      color: var(--text-muted);
+      font-size: 0.58rem;
+    }
+
+    /* ── DIVIDER ── */
+    .section-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, var(--amber) 0%, transparent 60%);
+      opacity: 0.2;
+      margin: 40px 0;
+    }
+
+    /* ── DISCLAIMER ── */
+    .disclaimer-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      padding: 20px 22px;
+      margin-top: 40px;
+    }
+
+    .disclaimer-title {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .disclaimer-text {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+      letter-spacing: 0.03em;
+    }
+
+    .github-link {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--amber);
+      text-decoration: none;
+      opacity: 0.65;
+      letter-spacing: 0.06em;
+    }
+    .github-link:hover { opacity: 1; }
+
+    .version-tag {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      text-align: center;
+      padding: 20px 0;
+      margin-top: 40px;
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="logo-accent"></div>
+  <div class="logo-block">
+    <div class="logo">Smoke&thinsp;Story</div>
+    <div class="tagline">California Wildfire Intelligence</div>
+  </div>
+  <div style="width:1px;height:30px;background:var(--border);flex-shrink:0;"></div>
+  <div class="header-spacer"></div>
+  <a href="/impact" class="back-link">← Back to Impact</a>
+</div>
+
+<!-- PAGE CONTENT -->
+<div class="page-content">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-module">SmokeStory Financial Impact Module · Version 3.0</div>
+    <h1 class="page-title">Full Methodology</h1>
+    <div class="page-vintage">
+      CAL FIRE February 5, 2025 · CAR 2024 · EPA AQS January 2025
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="overview-box">
+    This module estimates three independent, clearly separated economic impacts of the January 2025 LA wildfires on Los Angeles County. These three numbers measure different things and must not be added together. Each is presented with its full assumptions, data sources, and limitations.
+  </div>
+
+  <!-- ─── NUMBER 1 ─────────────────────────────────────────── -->
+  <h2>Number 1 — Direct Property Destruction</h2>
+  <div class="section-label">Headline Figure: $36B – $40B</div>
+
+  <p><strong style="color:var(--text);">What it measures:</strong> The pre-fire market value of residential and commercial structures confirmed as Destroyed or Major Damage by CAL FIRE field inspectors.</p>
+
+  <p><strong style="color:var(--text);">What it does NOT measure:</strong> Land value · Contents and personal property · Infrastructure · Uninsured losses beyond structure value</p>
+
+  <div class="highlight-box">
+    <div class="highlight-box-title">Structure Counts — CAL FIRE DINS, February 5, 2025</div>
+    <div class="mono-block" style="margin:0;border:none;background:none;padding:0;">
+      <span class="dim">Palisades Fire:</span>  <span class="white">6,831</span> <span class="dim">destroyed,</span>  <span class="white">973</span>  <span class="dim">major damage</span><br>
+      <span class="dim">Eaton Fire:     </span>  <span class="white">9,418</span> <span class="dim">destroyed,</span> <span class="white">1,073</span> <span class="dim">major damage</span><br>
+      <span class="dim">Total destroyed:</span> <span class="amber">16,249</span> <span class="dim">· Total major damage:</span> <span class="amber">2,046</span>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <div class="highlight-box-title">Pre-Fire Market Values — CAR 2024</div>
+    <div class="mono-block" style="margin:0;border:none;background:none;padding:0;">
+      <span class="dim">Pacific Palisades:</span> <span class="amber">$3,310,000</span><br>
+      <span class="dim">Altadena:         </span> <span class="amber">$1,425,000</span>
+    </div>
+  </div>
+
+  <div class="mono-block">
+    <span class="dim">Palisades destroyed:</span>  <span class="white">6,831 × $3,310,000  = $22.61B</span><br>
+    <span class="dim">Eaton destroyed:    </span>  <span class="white">9,418 × $1,425,000  = $13.42B</span><br>
+    <span class="dim">Subtotal destroyed: </span>  <span class="amber">$36.03B</span><br>
+    <span class="dim">Major damage:       </span>  <span class="white">2,046 × $2,367,500 × 50% = $2.42B</span><br>
+    <br>
+    <span class="dim">Lower bound:   </span>  <span class="white">$36.0B</span><br>
+    <span class="dim">Upper bound (4% demand surge): </span>  <span class="white">$40.0B</span><br>
+    <span class="dim">Final range:   </span>  <span class="amber">$36B – $40B</span>
+  </div>
+
+  <div class="collapsible">
+    <button class="collapsible-trigger" onclick="toggleCollapse(this)">
+      <span class="collapsible-trigger-label">Assumptions</span>
+      <span class="collapsible-arrow">▼</span>
+    </button>
+    <div class="collapsible-body">
+      <ul class="assumption-list">
+        <li><span class="assumption-id">A1</span>Neighborhood median prices used, not parcel-level assessments. Prop 13 constrained assessor values lag market values significantly.</li>
+        <li><span class="assumption-id">A2</span>Palisades pricing applied to Palisades structures, Altadena pricing to Eaton structures.</li>
+        <li><span class="assumption-id">A3</span>Major damage structures valued at 50% market price.</li>
+        <li><span class="assumption-id">A4</span>4% demand surge on upper bound only (vs Milliman's 15% — we use market value not replacement cost as base).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="collapsible">
+    <button class="collapsible-trigger" onclick="toggleCollapse(this)">
+      <span class="collapsible-trigger-label">Validation</span>
+      <span class="collapsible-arrow">▼</span>
+    </button>
+    <div class="collapsible-body">
+      <p>Milliman (Feb 2025): $25.2B–$39.4B insured losses only</p>
+      <p>UCLA Anderson (Feb 2025): $95B–$164B total economic</p>
+      <p>Our number sits above Milliman (includes uninsured) and below UCLA (narrower scope).</p>
+    </div>
+  </div>
+
+  <div class="collapsible">
+    <button class="collapsible-trigger" onclick="toggleCollapse(this)">
+      <span class="collapsible-trigger-label">Limitations</span>
+      <span class="collapsible-arrow">▼</span>
+    </button>
+    <div class="collapsible-body">
+      <ul class="limitation-list">
+        <li>Neighborhood medians mask bimodal value distribution</li>
+        <li>DINS counts subject to revision</li>
+        <li>Does not include contents, vehicles, infrastructure</li>
+        <li>CAR medians based on transactions that may not represent all structure types</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ─── NUMBER 2 ─────────────────────────────────────────── -->
+  <h2>Number 2 — Property Value Impact</h2>
+  <div class="section-label">Estimate: $3.9B</div>
+
+  <p><strong style="color:var(--text);">What it measures:</strong> Estimated decline in property values for surviving structures within 5 miles of fire perimeters.</p>
+
+  <p><strong style="color:var(--text);">What it does NOT measure:</strong> NOT additional to Number 1. Different properties only. Not permanent or cash-realized loss.</p>
+
+  <div class="highlight-box">
+    <div class="highlight-box-title">Academic Source</div>
+    <p>Sathaye et al. (2024), Landscape and Urban Planning — "Climate change and real estate markets: An empirical study of the impacts of wildfires on home values in California"</p>
+    <p>Method: Quasi-experimental spatial panel models with propensity score matching.</p>
+    <p>Key finding: <strong style="color:var(--amber);">2.2% average property value decline</strong> within affected zone.</p>
+  </div>
+
+  <div class="mono-block">
+    <span class="dim">Affected stock:      </span>  <span class="white">~75,000</span> <span class="dim">surviving structures within 5 miles</span><br>
+    <span class="dim">Total market value:  </span>  <span class="white">~$175B</span><br>
+    <span class="dim">Depreciation rate:   </span>  <span class="white">2.2%</span><br>
+    <span class="dim">Calculation:         </span>  <span class="white">$175B × 2.2% = $3.85B</span><br>
+    <span class="dim">Final estimate:      </span>  <span class="amber">$3.9B</span>
+  </div>
+
+  <div class="collapsible">
+    <button class="collapsible-trigger" onclick="toggleCollapse(this)">
+      <span class="collapsible-trigger-label">Assumptions</span>
+      <span class="collapsible-arrow">▼</span>
+    </button>
+    <div class="collapsible-body">
+      <ul class="assumption-list">
+        <li><span class="assumption-id">A1</span>2.2% used as single point estimate. Higher values (8%+) not supported by literature for this parameter.</li>
+        <li><span class="assumption-id">A2</span>Post-fire CAR distressed sales data (Altadena -39.1%, Palisades -23.7%) NOT used — reflects forced lot sales only, not typical residential transactions.</li>
+        <li><span class="assumption-id">A3</span>5-mile radius is product simplification, not a fixed academic threshold.</li>
+        <li><span class="assumption-id">A4</span>$175B housing stock is approximate, derived from LA County Assessor parcel counts and Zillow Research CSV data.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="collapsible">
+    <button class="collapsible-trigger" onclick="toggleCollapse(this)">
+      <span class="collapsible-trigger-label">Limitations</span>
+      <span class="collapsible-arrow">▼</span>
+    </button>
+    <div class="collapsible-body">
+      <ul class="limitation-list">
+        <li>2.2% is average across many fires — 2025 LA fires may exceed this given urban intensity</li>
+        <li>Paper loss may partially recover</li>
+        <li>Study sample may not include events of this scale</li>
+        <li>No distance-decay model applied within the zone</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ─── NUMBER 3 ─────────────────────────────────────────── -->
+  <h2>Number 3 — Acute Smoke Health Cost</h2>
+  <div class="section-label">Estimate: $0.5B – $1.0B</div>
+
+  <p><strong style="color:var(--text);">What it measures:</strong> Economic cost of PM2.5 exposure to 4.2M LA County residents during 14-day elevated smoke period. Health economic cost — NOT property loss. Must not be added to Numbers 1 or 2.</p>
+
+  <p><strong style="color:var(--text);">Why included:</strong> SmokeStory's unique contribution. No other published LA wildfire estimate includes smoke health cost. Calculated directly from SmokeStory PM2.5 sensor data.</p>
+
+  <div class="highlight-box">
+    <div class="highlight-box-title">Exposure Data — EPA AQS via SmokeStory, Jan 9–23 2025</div>
+    <div class="mono-block" style="margin:0;border:none;background:none;padding:0;">
+      <span class="dim">Mean PM2.5:         </span> <span class="amber">44.8 µg/m³</span><br>
+      <span class="dim">EPA 2024 standard:  </span> <span class="white">9.0 µg/m³</span><br>
+      <span class="dim">Excess:             </span> <span class="white">35.8 µg/m³ = 3.58 units of 10 µg/m³</span><br>
+      <span class="dim">Duration:           </span> <span class="white">14 days</span><br>
+      <span class="dim">Exposed population: </span> <span class="white">4,200,000</span>
+    </div>
+  </div>
+
+  <div class="mono-block">
+    <span class="dim">— Health Impact Functions (EPA BenMAP TSD 2023) —</span><br><br>
+    <span class="dim">Acute admissions (65+, 800K):  </span>  <span class="white">0.17% × 3.58 = </span><span class="amber">4,869 cases</span><br>
+    <span class="dim">ER visits (all ages, 4.2M):    </span>  <span class="white">0.24% × 3.58 = </span><span class="amber">36,086 visits</span><br>
+    <span class="dim">Asthma attacks (450K patients): </span>  <span class="white">3.0% × 3.58  = </span><span class="amber">48,330 attacks</span><br>
+    <span class="dim">Work loss days (4.2M):         </span>  <span class="white">0.046 × 3.58  = </span><span class="amber">691,464 days</span><br>
+    <span class="dim">Restricted activity (4.2M):    </span>  <span class="white">0.072 × 3.58  = </span><span class="amber">1,082,016 days</span>
+  </div>
+
+  <div class="mono-block">
+    <span class="dim">— COI Unit Values (EPA BenMAP 2023) —</span><br><br>
+    <span class="dim">Admissions:          </span>  <span class="white">$40,000/case  →  </span><span class="amber">$194.8M</span><br>
+    <span class="dim">ER visits:           </span>  <span class="white">$1,200/visit  →  </span><span class="amber">$43.3M</span><br>
+    <span class="dim">Asthma attacks:      </span>  <span class="white">$220/attack   →  </span><span class="amber">$10.6M</span><br>
+    <span class="dim">Work loss days:      </span>  <span class="white">$280/day      →  </span><span class="amber">$193.6M</span><br>
+    <span class="dim">Restricted activity: </span>  <span class="white">$96/day       →  </span><span class="amber">$103.9M</span><br>
+    <br>
+    <span class="dim">Base total: </span><span class="amber">$546M</span><br>
+    <span class="dim">Final range: </span><span class="amber">$0.5B – $1.0B</span>
+    <br><span class="dim">(Upper bound accounts for monitor coverage gaps, higher incidence in vulnerable communities)</span>
+  </div>
+
+  <div class="collapsible">
+    <button class="collapsible-trigger" onclick="toggleCollapse(this)">
+      <span class="collapsible-trigger-label">Assumptions</span>
+      <span class="collapsible-arrow">▼</span>
+    </button>
+    <div class="collapsible-body">
+      <ul class="assumption-list">
+        <li><span class="assumption-id">A1</span>COI method used, not VSL. VSL designed for chronic long-term exposure, not acute 14-day events.</li>
+        <li><span class="assumption-id">A2</span>14-day duration is conservative — some monitoring stations recorded longer periods of elevated PM2.5.</li>
+        <li><span class="assumption-id">A3</span>Population-average BenMAP incidence rates applied.</li>
+        <li><span class="assumption-id">A4</span>Uniform exposure assumed across 4.2M zone.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="collapsible">
+    <button class="collapsible-trigger" onclick="toggleCollapse(this)">
+      <span class="collapsible-trigger-label">Limitations</span>
+      <span class="collapsible-arrow">▼</span>
+    </button>
+    <div class="collapsible-body">
+      <ul class="limitation-list">
+        <li>COI excludes mortality risk — deliberate conservative choice</li>
+        <li>Wildfire PM2.5 may be more harmful per µg/m³ than general rate (toxic ash compounds)</li>
+        <li>AQS data preliminary — final QA available 6+ months post-collection</li>
+        <li>National incidence rates applied to LA County</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ─── DATA SOURCES TABLE ─────────────────────────────────── -->
+  <h2>Data Sources</h2>
+  <div class="section-label">All Sources Are Publicly Available</div>
+
+  <table class="sources-table">
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Used For</th>
+        <th>Access</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="source-name">CAL FIRE DINS (Feb 5, 2025)</td>
+        <td>Structure counts</td>
+        <td class="source-access">public fire.ca.gov</td>
+      </tr>
+      <tr>
+        <td class="source-name">CAR 2024</td>
+        <td>Pre-fire prices</td>
+        <td class="source-access">public reports</td>
+      </tr>
+      <tr>
+        <td class="source-name">Zillow Research CSV</td>
+        <td>Housing stock value</td>
+        <td class="source-access">free zillow.com/research/data</td>
+      </tr>
+      <tr>
+        <td class="source-name">LA County Assessor Open Data</td>
+        <td>Housing stock count</td>
+        <td class="source-access">public data.lacounty.gov</td>
+      </tr>
+      <tr>
+        <td class="source-name">Sathaye et al. 2024 LUP</td>
+        <td>Depreciation rate</td>
+        <td class="source-access">peer-reviewed journal</td>
+      </tr>
+      <tr>
+        <td class="source-name">EPA AQS Param 88101</td>
+        <td>PM2.5 readings</td>
+        <td class="source-access">public API via SmokeStory</td>
+      </tr>
+      <tr>
+        <td class="source-name">EPA BenMAP TSD Jan 2023</td>
+        <td>Health impact functions</td>
+        <td class="source-access">public epa.gov/benmap</td>
+      </tr>
+      <tr>
+        <td class="source-name">EPA BenMAP COI 2023</td>
+        <td>Economic unit values</td>
+        <td class="source-access">public epa.gov/benmap</td>
+      </tr>
+      <tr>
+        <td class="source-name">BLS 2024 LA County</td>
+        <td>Work loss valuation</td>
+        <td class="source-access">public bls.gov</td>
+      </tr>
+      <tr>
+        <td class="source-name">CHIS 2021–2022</td>
+        <td>Asthma population</td>
+        <td class="source-access">public UCLA CHIS</td>
+      </tr>
+      <tr>
+        <td class="source-name">CAL FIRE FRAP</td>
+        <td>Map perimeters</td>
+        <td class="source-access">public GeoJSON</td>
+      </tr>
+      <tr>
+        <td class="source-name">NOAA HMS</td>
+        <td>Smoke layer</td>
+        <td class="source-access">via SmokeStory</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-divider"></div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer-box">
+    <div class="disclaimer-title">Disclaimer</div>
+    <div class="disclaimer-text">
+      These three estimates measure different things and must not be added together. All figures are preliminary estimates using public data and established methodology. SmokeStory is an independent open-source project, not an insurance company, government agency, or academic institution.
+      <br><br>
+      Methodology Version 3.0 &nbsp;·&nbsp; <a href="https://github.com/tinahuang1994/smokestory" class="github-link">github.com/tinahuang1994/smokestory</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="page-footer">
+    Tracking Wildfire Smoke Across California &nbsp;·&nbsp; NOAA HMS &nbsp;·&nbsp; EPA AQS &nbsp;·&nbsp; NASA VIIRS &nbsp;·&nbsp; Claude AI
+  </div>
+
+</div><!-- end page-content -->
+
+<script>
+  function toggleCollapse(btn) {
+    const col = btn.closest('.collapsible');
+    col.classList.toggle('open');
+  }
+</script>
+
+</body>
+</html>
