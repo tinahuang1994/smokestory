@@ -673,43 +673,6 @@
       padding-top: 1px;
     }
 
-    /* ── Compact welcome panel (Palisades date — fit everything above fold) ── */
-    .panel-compact .welcome-inner {
-      padding-top: 18px !important;
-      padding-bottom: 20px !important;
-    }
-    .panel-compact .welcome-wordmark {
-      font-size: 2rem !important;
-      margin-bottom: 4px !important;
-    }
-    .panel-compact .welcome-subtitle {
-      margin-bottom: 12px !important;
-    }
-    .panel-compact .welcome-divider {
-      margin-bottom: 14px !important;
-    }
-    .panel-compact .welcome-section {
-      margin-bottom: 12px !important;
-    }
-    .panel-compact .welcome-about {
-      font-size: 0.85rem !important;
-      line-height: 1.45 !important;
-    }
-    .panel-compact .welcome-steps {
-      gap: 8px !important;
-    }
-    .panel-compact .step-text {
-      font-size: 0.75rem !important;
-      line-height: 1.35 !important;
-    }
-    .panel-compact .step-num {
-      font-size: 0.95rem !important;
-    }
-    .panel-compact #palisades-combined-card {
-      margin-top: 8px !important;
-      padding: 12px 16px !important;
-    }
-
     /* ── Top stories in welcome panel ── */
     #top-stories-list {
       display: flex;
@@ -1246,12 +1209,13 @@
         </div>
         <!-- Row 3: fire context -->
         <div style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:300;color:rgba(255,255,255,0.5);margin-bottom:14px;">📅 Palisades &amp; Eaton Fires — Jan 9, 2025</div>
-        <!-- Row 4: financial number -->
-        <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:400;color:#f97316;letter-spacing:-0.02em;line-height:1.1;margin-bottom:4px;">$36B – $40B</div>
+        <!-- Row 4: financial number + inline CTA -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:400;color:#f97316;letter-spacing:-0.02em;line-height:1.1;">$36B – $40B</div>
+          <button onclick="window.open('/impact','_blank')" style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:#f97316;background:transparent;border:1px solid rgba(249,115,22,0.5);padding:5px 10px;border-radius:3px;cursor:pointer;white-space:nowrap;transition:background 0.2s;" onmouseenter="this.style.background='rgba(249,115,22,0.1)'" onmouseleave="this.style.background='transparent'">VIEW ANALYSIS →</button>
+        </div>
         <!-- Row 5: financial label -->
-        <div style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:300;color:rgba(255,255,255,0.5);margin-bottom:14px;">estimated structures destroyed · property only</div>
-        <!-- Row 6: CTA -->
-        <button onclick="window.open('/impact','_blank')" style="width:100%;font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:#f97316;background:transparent;border:1px solid rgba(249,115,22,0.35);padding:8px 12px;cursor:pointer;transition:background 0.2s,border-color 0.2s;" onmouseenter="this.style.background='rgba(249,115,22,0.08)';this.style.borderColor='rgba(249,115,22,0.6)'" onmouseleave="this.style.background='transparent';this.style.borderColor='rgba(249,115,22,0.35)'">VIEW FINANCIAL ANALYSIS →</button>
+        <div style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:300;color:rgba(255,255,255,0.5);">estimated structures destroyed · property only</div>
       </div>
 
       <!-- Legacy banners (kept in DOM, permanently hidden — replaced by combined card) -->
@@ -1769,8 +1733,6 @@
     const combinedCard = document.getElementById('palisades-combined-card');
     if (topStoriesSection) topStoriesSection.style.display = isPalisadesDate ? 'none' : '';
     if (combinedCard) combinedCard.style.display = isPalisadesDate ? 'block' : 'none';
-    const welcomeView = document.getElementById('welcome-view');
-    if (welcomeView) welcomeView.classList.toggle('panel-compact', isPalisadesDate);
     const tsList = document.getElementById('top-stories-list');
     if (tsList) tsList.innerHTML = '<div class="top-story-empty">Loading…</div>';
 
