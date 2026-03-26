@@ -996,14 +996,19 @@
       transform: scale(0) !important;
     }
     .fire-marker-igniting {
-      animation: fireIgnite 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: fireIgnite 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
     @keyframes mapPulse {
       0%   { box-shadow: inset 0 0 0px rgba(239,68,68,0); }
-      50%  { box-shadow: inset 0 0 60px rgba(239,68,68,0.15); }
+      50%  { box-shadow: inset 0 0 60px rgba(239,68,68,0.25); }
       100% { box-shadow: inset 0 0 0px rgba(239,68,68,0); }
     }
-    .map-pulse { animation: mapPulse 1.2s ease-in-out forwards; }
+    .map-pulse { animation: mapPulse 2.0s ease-in-out forwards; }
+    @keyframes mapFadeIn {
+      0%   { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .map-loading { animation: mapFadeIn 1.5s ease both; }
 
     @keyframes replayFadeIn {
       0%   { opacity: 0; transform: translateY(-4px); }
@@ -2049,25 +2054,28 @@
     const replayBtn = document.getElementById('replay-btn');
     if (replayBtn) replayBtn.classList.remove('visible');
 
-    // --- ACT 0: hide all layers immediately ---
+    // FIX 4: Base map fade in from black
+    const mapEl = document.getElementById('map');
+    if (mapEl) {
+      mapEl.classList.add('map-loading');
+      setTimeout(() => mapEl.classList.remove('map-loading'), 1500);
+    }
 
-    // Hide fire markers
+    // --- ACT 0: Hide all layers immediately ---
+
+    // Reset fire markers (clear any inline styles from previous replay)
     document.querySelectorAll('.fire-marker').forEach(el => {
       el.classList.add('fire-marker-hidden');
       el.classList.remove('fire-marker-igniting');
+      el.style.opacity = '';
+      el.style.transform = '';
     });
 
-    // Hide smoke layer (set style to fully transparent)
-    if (layers.smoke) {
-      layers.smoke.setStyle({ opacity: 0, fillOpacity: 0 });
-    }
+    // Hide smoke and PM2.5 — fires are handled via class above
+    if (layers.smoke) layers.smoke.setStyle({ opacity: 0, fillOpacity: 0 });
+    if (layers.pm25)  layers.pm25.setStyle({ opacity: 0, fillOpacity: 0 });
 
-    // Hide PM2.5 layer
-    if (layers.pm25) {
-      layers.pm25.setStyle({ opacity: 0, fillOpacity: 0 });
-    }
-
-    // --- ACT 1: Fire markers ignite (0.8s) ---
+    // --- Precompute adaptive timing from actual layer sizes ---
     const fireMarkers = [];
     if (layers.fires) {
       layers.fires.eachLayer(lyr => {
@@ -2077,70 +2085,99 @@
     }
     fireMarkers.sort((a, b) => b.frp - a.frp);
 
-    const fireStart = 800;
-    const fireStep  = 80;
-    fireMarkers.forEach((item, i) => {
-      setTimeout(() => {
-        const el = item.lyr._icon;
-        if (el) {
+    let smokeCount = 0;
+    if (layers.smoke) layers.smoke.eachLayer(() => smokeCount++);
+
+    let pm25Count = 0;
+    if (layers.pm25)  layers.pm25.eachLayer(() => pm25Count++);
+
+    const fireStart  = 1500;
+    const fireStep   = 200;
+    const smokeStart = fireStart + fireMarkers.length * fireStep + 500;
+    const smokeStep  = 400;
+    const pm25Start  = Math.max(10000, smokeStart + smokeCount * smokeStep + 1000);
+    const pm25Step   = 150;
+    const replayAt   = pm25Start + pm25Count * pm25Step + 1500;
+
+    // FIX 5: Verify layer references before each act
+    if (!layers.fires) console.warn('[ANIM] fires layer not ready, skipping Act 1');
+    if (!layers.smoke) console.warn('[ANIM] smoke layer not ready, skipping Act 2');
+    if (!layers.pm25)  console.warn('[ANIM] pm25 layer not ready, skipping Act 3');
+
+    // --- ACT 1: Fire markers ignite (strongest FRP first) ---
+    if (layers.fires) {
+      fireMarkers.forEach((item, i) => {
+        setTimeout(() => {
+          const el = item.lyr._icon;
+          if (!el) return;
           el.classList.remove('fire-marker-hidden');
           el.classList.add('fire-marker-igniting');
-        }
-      }, fireStart + i * fireStep);
-    });
+          // FIX 1: After animation completes, lock visible state permanently
+          // so forwards-fill cannot be lost by any later style update
+          setTimeout(() => {
+            el.classList.remove('fire-marker-igniting');
+            el.style.opacity = '1';
+          }, 900);
+        }, fireStart + i * fireStep);
+      });
+    }
 
-    // Screen pulse near fire peak
+    // Screen pulse at fire peak
     const peakTime = fireStart + (fireMarkers.length * fireStep) * 0.6;
     setTimeout(() => {
-      const mapEl = document.getElementById('map');
-      if (mapEl) {
-        mapEl.classList.add('map-pulse');
-        setTimeout(() => mapEl.classList.remove('map-pulse'), 1200);
-      }
+      if (!mapEl) return;
+      mapEl.classList.add('map-pulse');
+      setTimeout(() => mapEl.classList.remove('map-pulse'), 2000);
     }, Math.max(peakTime, fireStart + 400));
 
-    // --- ACT 2: Smoke plumes drift in (2.5s) ---
-    setTimeout(() => {
-      if (!layers.smoke) return;
-      const smokeItems = [];
-      layers.smoke.eachLayer(lyr => {
-        const density = lyr.feature?.properties?.Density ||
-                        lyr.feature?.properties?.density ||
-                        lyr.feature?.properties?.DENSITY || 'Light';
-        const order = (density.toString().toLowerCase().includes('heavy') || density === '3') ? 0
-                    : (density.toString().toLowerCase().includes('medium') || density.toString().toLowerCase().includes('moderate') || density === '2') ? 1
-                    : 2;
-        smokeItems.push({ lyr, density, order });
-      });
-      smokeItems.sort((a, b) => a.order - b.order);
-      smokeItems.forEach((item, i) => {
-        setTimeout(() => {
-          item.lyr.setStyle({ opacity: 0.7, fillOpacity: smokeOpacity(item.density) });
-        }, i * 120);
-      });
-    }, 2500);
+    // --- ACT 2: Smoke plumes drift in ---
+    // ONLY modifies smokeLayer — does not touch fires or PM2.5
+    if (layers.smoke) {
+      setTimeout(() => {
+        const smokeItems = [];
+        layers.smoke.eachLayer(lyr => {
+          const density = lyr.feature?.properties?.Density ||
+                          lyr.feature?.properties?.density ||
+                          lyr.feature?.properties?.DENSITY || 'Light';
+          const d = density.toString().toLowerCase();
+          const order = (d.includes('heavy') || density === '3') ? 0
+                      : (d.includes('medium') || d.includes('moderate') || density === '2') ? 1
+                      : 2;
+          smokeItems.push({ lyr, density, order });
+        });
+        smokeItems.sort((a, b) => a.order - b.order);
+        smokeItems.forEach((item, i) => {
+          setTimeout(() => {
+            // ACT 2: SMOKE ONLY — do not touch fires or PM2.5
+            item.lyr.setStyle({ opacity: 0.7, fillOpacity: smokeOpacity(item.density) });
+          }, i * smokeStep);
+        });
+      }, smokeStart);
+    }
 
-    // --- ACT 3: PM2.5 counties bleed in (4.0s) ---
-    setTimeout(() => {
-      if (!layers.pm25) return;
-      const counties = [];
-      layers.pm25.eachLayer(lyr => {
-        const pm25 = lyr.feature?.properties?.pm25_mean ?? null;
-        counties.push({ lyr, pm25: pm25 != null ? pm25 : -1 });
-      });
-      counties.sort((a, b) => b.pm25 - a.pm25);
-      counties.forEach((item, i) => {
-        setTimeout(() => {
-          const targetFill = item.pm25 > 0 ? 0.65 : 0.18;
-          item.lyr.setStyle({ opacity: 0.8, fillOpacity: targetFill });
-        }, i * 60);
-      });
-    }, 4000);
+    // --- ACT 3: PM2.5 counties bleed in (worst first) ---
+    // ONLY modifies pm25Layer — does not touch fires or smoke
+    if (layers.pm25) {
+      setTimeout(() => {
+        const counties = [];
+        layers.pm25.eachLayer(lyr => {
+          const pm25 = lyr.feature?.properties?.pm25_mean ?? null;
+          counties.push({ lyr, pm25: pm25 != null ? pm25 : -1 });
+        });
+        counties.sort((a, b) => b.pm25 - a.pm25);
+        counties.forEach((item, i) => {
+          setTimeout(() => {
+            // ACT 3: PM2.5 ONLY — do not touch fires or smoke
+            item.lyr.setStyle({ opacity: 0.8, fillOpacity: item.pm25 > 0 ? 0.65 : 0.18 });
+          }, i * pm25Step);
+        });
+      }, pm25Start);
+    }
 
-    // --- Replay button appears at 5.8s ---
+    // Replay button appears after all PM2.5 counties have faded in
     setTimeout(() => {
       if (replayBtn) replayBtn.classList.add('visible');
-    }, 5800);
+    }, replayAt);
   }
 
   function replayAnimation() {
