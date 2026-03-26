@@ -1,180 +1,210 @@
 # SmokeStory
+### AI-Powered Wildfire Smoke Intelligence for California
 
-**AI-powered wildfire smoke narratives for California's 58 counties**
+> Translating raw satellite and sensor data into plain-English narratives for journalists, researchers, and communities affected by California's wildfires.
 
-SmokeStory turns raw environmental data into plain-English stories. Every day, for every county in California, it fuses ground-level air quality readings, satellite smoke imagery, and active fire detections into a single AI-generated narrative — giving journalists, public health researchers, and affected communities the context they need, fast. Navigate to any historic wildfire event back to 2005, click a county, and read the story of the smoke.
+Live site: https://smokestory.onrender.com
+Built by: Tina Huang · tina.huang@aya.yale.edu
+GitHub: https://github.com/tinahuang1994/smokestory
 
 ---
 
 ## What It Does
 
-- **Interactive map** — overlays PM2.5 air quality by county, NOAA satellite smoke plumes, and NASA active fire detections on a single dark-mode Leaflet canvas
-- **AI narratives** — click any California county to generate a 4-sentence journalistic narrative powered by Claude, grounded in that day's actual sensor data
-- **Historic events** — a curated dropdown of California's most significant wildfire events (Camp Fire, Dixie Fire, Palisades Fire, and more) loads the exact date with one click
-- **News integration** — Guardian API headlines from the same date are woven into every narrative and surfaced as source links in the panel
+SmokeStory combines three real-time satellite and sensor data sources to tell the story of wildfire smoke:
+
+- **Where the fires are** — NASA VIIRS satellite fire detections with Fire Radiative Power (FRP) intensity data
+- **Where the smoke is** — NOAA Hazard Mapping System smoke plume boundaries with density classification
+- **How bad the air is** — EPA Air Quality System PM2.5 ground monitor readings by county
+
+For any California county on any date since 2005, SmokeStory generates a plain-English AI narrative combining all three data sources — calibrated to the severity of conditions and grounded in the actual sensor readings.
+
+---
+
+## Features
+
+### Interactive Map
+- Three toggleable data layers: PM2.5 counties, smoke plumes, active fire points
+- Hover tooltips showing county name and PM2.5 value
+- Click any county to open the data panel
+- 8 historic wildfire events pre-loaded for exploration
+- Covers August 2005 to present
+
+### AI Narrative Generation
+- 4-sentence journalistic narrative per county per date
+- Severity-calibrated language (Good through Hazardous)
+- Integrates Guardian news headlines for context
+- Powered by Claude claude-sonnet-4-20250514
+- Explicit EPA severity classification passed to model — no independent AI reclassification
+
+### Financial Impact Module
+Estimates the economic impact of the January 2025 Palisades and Eaton Fires on Los Angeles County. Three independent estimates shown separately — these figures must not be added together:
+
+**Estimate 01 — Direct Property Destruction: $36B – $40B**
+What it measures: Market value of 16,249 destroyed structures.
+Source: CAL FIRE DINS × CAR 2024 prices.
+
+**Estimate 02 — Neighborhood Value Impact: $3.9B**
+What it measures: Property value decline within 5 miles of fire perimeters.
+Source: Sathaye et al. 2024, Landscape and Urban Planning.
+
+**Estimate 03 — Smoke Health Economic Cost: $0.5B – $1.0B**
+What it measures: Health cost of 14 days PM2.5 exposure to 4.2M residents.
+Source: EPA BenMAP COI methodology applied to SmokeStory sensor data.
+
+Full methodology: https://smokestory.onrender.com/methodology
+Impact page: https://smokestory.onrender.com/impact
+
+### Data Quality Warnings
+- Automatic detection of suspect PM2.5 readings during major fire events (monitor outages)
+- Warning displayed when smoke is present but PM2.5 is anomalously low
+- Date validation blocks pre-2005 and future dates
 
 ---
 
 ## Data Sources
 
-| Source | What It Provides |
-|--------|-----------------|
-| **EPA Air Quality System (AQS)** | Ground-level PM2.5 daily averages from monitoring stations across California |
-| **NOAA Hazard Mapping System (HMS)** | Smoke plume polygons manually analyzed by meteorologists from GOES satellite imagery, classified as Light / Medium / Heavy |
-| **NASA VIIRS/FIRMS** | Active fire detections from the Suomi-NPP satellite at 375m resolution, with Fire Radiative Power (FRP) intensity values |
-| **The Guardian API** | News headlines from the date being explored, for historical context in AI narratives |
-| **US Census TIGER/Line** | County boundary shapefiles (GENZ 2022, 5m resolution) downloaded and cached locally |
+| Source | What It Provides | Update Frequency |
+|--------|-----------------|-----------------|
+| **NASA FIRMS VIIRS** | Active fire detections with FRP | ~3 hours |
+| **NOAA HMS** | Smoke plume boundaries (Light/Medium/Heavy) | Daily |
+| **EPA AQS (param 88101)** | PM2.5 ground monitor readings | Daily |
+| **Guardian API** | News headlines for narrative context | Real-time |
+| **CAL FIRE DINS** | Structure damage counts | Static snapshot, Feb 5, 2025 |
+| **CAR 2024** | Pre-fire property values | Static 2024 annual data |
+
+PM2.5 standard: Uses revised February 2024 EPA thresholds (Good: 0–9 µg/m³, replacing the previous 0–12 µg/m³ standard).
 
 ---
 
-## Tech Stack
-
-**Backend**
-- Python 3.11, FastAPI, Uvicorn
-- GeoPandas + Shapely for spatial joins (smoke plumes × county polygons)
-- Pandas for PM2.5 aggregation
-- Anthropic Claude API (`claude-sonnet-4-20250514`) for narrative generation and chat
-
-**Frontend**
-- Vanilla JavaScript — no framework, single HTML file
-- [Leaflet.js](https://leafletjs.com/) 1.9.4 — interactive map with GeoJSON layers
-- [Flatpickr](https://flatpickr.js.org/) — date picker with historic range back to 2005
-- Cormorant Garamond · DM Mono · DM Sans — editorial typography
-- CartoDB Dark Matter basemap
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.11+
-- API keys for EPA AQS, NASA FIRMS, and Anthropic Claude
-- The Guardian API key (optional — defaults to `test` key with limited quota)
-
-### Installation
-
-**1. Clone the repository**
-```bash
-git clone https://github.com/your-username/smokestory.git
-cd smokestory
-```
-
-**2. Create and activate a virtual environment**
-```bash
-python3.11 -m venv venv
-source venv/bin/activate        # macOS/Linux
-# venv\Scripts\activate         # Windows
-```
-
-**3. Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-**4. Configure environment variables**
-```bash
-cp .env.example .env
-# Edit .env and fill in your API keys (see below)
-```
-
-**5. Start the API server**
-```bash
-uvicorn api.main:app --reload
-```
-
-The API will be available at `http://localhost:8000`. On first run, county boundary shapefiles (~50 MB) are downloaded from the US Census and cached to `data/counties.geojson`.
-
-**6. Open the frontend**
-
-Open `frontend/index.html` directly in your browser. No build step required.
-
----
-
-### Environment Variables
-
-Create a `.env` file in the project root with the following keys:
-
-```env
-# Required
-ANTHROPIC_API_KEY=sk-ant-...          # Claude API key — narratives and chat
-FIRMS_MAP_KEY=...                     # NASA FIRMS map key — active fire data
-EPA_AQS_EMAIL=you@example.com         # EPA AQS account email
-EPA_AQS_KEY=...                       # EPA AQS API key
-
-# Optional
-GUARDIAN_API_KEY=...                  # The Guardian API key (defaults to "test")
-NEWS_API_KEY=...                      # Reserved for future news source expansion
-```
-
-**Getting API keys:**
-- **Anthropic**: [console.anthropic.com](https://console.anthropic.com)
-- **NASA FIRMS**: [firms.modaps.eosdis.nasa.gov/api](https://firms.modaps.eosdis.nasa.gov/api/map_key/)
-- **EPA AQS**: [aqs.epa.gov/aqsweb/documents/data_api.html](https://aqs.epa.gov/aqsweb/documents/data_api.html)
-- **The Guardian**: [open-platform.theguardian.com](https://open-platform.theguardian.com/access/)
-
----
-
-## Project Structure
+## Architecture
 
 ```
 smokestory/
 ├── api/
-│   └── main.py                 # FastAPI app — all HTTP endpoints
+│   └── main.py                  # FastAPI backend — all HTTP endpoints
 │
 ├── pipeline/
-│   ├── build_layer.py          # Assembles county layer (PM2.5 + smoke spatial join)
-│   ├── epa_aqs.py              # Fetches PM2.5 readings from EPA AQS API
-│   ├── goes_hms.py             # Downloads NOAA HMS smoke plume polygons
-│   ├── viirs_fire.py           # Fetches active fire detections from NASA FIRMS
-│   └── news.py                 # Queries The Guardian API for headlines
+│   ├── epa_aqs.py               # EPA PM2.5 data ingestion
+│   ├── goes_hms.py              # NOAA smoke polygon fetching
+│   ├── viirs_fire.py            # NASA fire detection fetching
+│   ├── build_layer.py           # Spatial join and county data assembly
+│   └── news.py                  # Guardian API headlines
 │
 ├── narrative/
-│   ├── generator.py            # Claude-powered narrative generation
-│   └── prompts.py              # Prompt templates
+│   └── generator.py             # Claude narrative engine
 │
 ├── frontend/
-│   └── index.html              # Single-file SPA — map, panel, chat UI
+│   ├── index.html               # Main SmokeStory map interface
+│   ├── impact.html              # Financial Impact page
+│   └── methodology.html         # Full methodology document
 │
-├── data/                       # Auto-generated on first run
-│   └── counties.geojson        # Cached US county boundaries (Census TIGER)
-│
+├── render.yaml                  # Render deployment configuration
 ├── requirements.txt
-├── .env.example
-└── README.md
+└── .env.example
 ```
 
-### API Endpoints
+**Backend:** FastAPI + Python
+**Frontend:** Leaflet.js + Flatpickr (single-file HTML, no build step)
+**AI:** Anthropic Claude claude-sonnet-4-20250514
+**Deployment:** Render free tier
+**Geospatial:** GeoPandas for spatial joins
+
+---
+
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| `GET` | `/` | Main SmokeStory map |
+| `GET` | `/impact` | Financial Impact page |
+| `GET` | `/methodology` | Full methodology document |
 | `GET` | `/health` | Health check |
-| `GET` | `/county/{state}/{county}/{date}` | County data + AI narrative for a given date |
-| `GET` | `/top-stories/{date}` | Top 3 most smoke-affected counties with narratives |
-| `GET` | `/map/pm25/06/{date}` | PM2.5 GeoJSON for all California counties |
-| `GET` | `/map/smoke/{date}` | NOAA HMS smoke plume GeoJSON |
-| `GET` | `/map/fires/{date}` | NASA FIRMS active fire point GeoJSON |
-| `GET` | `/news/{county}/{date}` | Guardian headlines for a county and date |
-| `POST` | `/chat` | Chat assistant — answers questions grounded in county data |
+| `GET` | `/county/{state}/{county}/{date}` | County data + narrative |
+| `GET` | `/top-stories/{date}` | Top 3 CA counties by PM2.5 |
+| `GET` | `/map/pm25/06/{date}` | PM2.5 GeoJSON for CA counties |
+| `GET` | `/map/smoke/{date}` | HMS smoke polygons GeoJSON |
+| `GET` | `/map/fires/{date}` | VIIRS fire points GeoJSON |
+
+Date format: YYYYMMDD (e.g. 20250109)
+State code: 06 (California)
 
 ---
 
-## Open Source
+## Local Development
 
-SmokeStory is fully open source. Any city, NGO, newsroom, or researcher can deploy their own instance or adapt the stack for a different environmental hazard — air quality in other states, flood risk, drought severity, or any phenomenon where satellite data meets lived human experience.
+```bash
+git clone https://github.com/tinahuang1994/smokestory.git
+cd smokestory
 
-Pull requests and forks are welcome.
+python -m venv venv
+source venv/bin/activate        # Mac/Linux
+
+pip install -r requirements.txt
+
+cp .env.example .env            # Add your API keys
+
+uvicorn api.main:app --reload
+```
+
+Open http://127.0.0.1:8000 in your browser.
+
+### Required API Keys
+
+| Key | Where to get it |
+|-----|----------------|
+| `ANTHROPIC_API_KEY` | console.anthropic.com |
+| `FIRMS_MAP_KEY` | firms.modaps.eosdis.nasa.gov |
+| `EPA_AQS_EMAIL` | aqs.epa.gov data API page |
+| `EPA_AQS_KEY` | aqs.epa.gov data API page |
+| `GUARDIAN_API_KEY` | open-platform.theguardian.com |
 
 ---
 
-## License
+## Financial Impact Methodology
 
-MIT License — see [LICENSE](LICENSE) for details.
+The financial impact module uses three independent methodologies — one per estimate:
+
+**Estimate 01 — Direct Destruction ($36B – $40B)**
+CAL FIRE DINS structure counts × CAR 2024 pre-fire median prices. Validated against Milliman insured loss estimate of $25.2B–$39.4B.
+
+**Estimate 02 — Neighborhood Value Impact ($3.9B)**
+Sathaye et al. 2024, Landscape and Urban Planning. 2.2% average property value decline within 5-mile affected zone applied to $175B surviving housing stock.
+
+**Estimate 03 — Smoke Health Cost ($0.5B – $1.0B)**
+EPA BenMAP-CE simplified COI chain applied to SmokeStory PM2.5 sensor data. 14-day exposure period, 4.2M residents, EPA TSD 2023 health impact functions.
+
+Full methodology: https://smokestory.onrender.com/methodology
+
+---
+
+## Key Design Decisions
+
+**Why mean not max for PM2.5?**
+We show the daily mean across all monitors in a county rather than the maximum, for consistency between the map visualization and the AI narrative. The tooltip labels this clearly as daily mean.
+
+**Why 2024 EPA thresholds?**
+The EPA revised PM2.5 standards in February 2024, lowering the Good/Moderate boundary from 12 to 9 µg/m³. SmokeStory uses current standards.
+
+**Why COI not VSL for health costs?**
+Cost of Illness is more appropriate for acute 14-day exposure events. VSL is designed for chronic long-term regulatory analysis and would produce misleadingly large numbers for a short-duration event.
+
+---
+
+## Known Limitations
+
+- EPA monitors are sparse in rural counties — many show No data not because air is clean but because no monitor exists
+- HMS smoke polygons show atmospheric smoke — ground-level impact may differ
+- PM2.5 data for recent dates may be preliminary (AQS finalizes data 2–6 months after collection)
+- Financial impact figures are estimates using public data — not actuarial or academic models
+- Fire perimeter boundaries on the impact page are approximate polygons for visualization only
 
 ---
 
 ## Acknowledgments
 
-Built with data from **NOAA**, **NASA**, and the **U.S. Environmental Protection Agency** — all freely available through public APIs. Narratives powered by **Anthropic Claude**. News context from **The Guardian Open Platform**.
+Data provided by NASA FIRMS, NOAA HMS, EPA AQS, and The Guardian. AI narratives powered by Anthropic Claude. Built with FastAPI, Leaflet.js, and GeoPandas.
 
-> *Wildfire smoke is one of the fastest-growing air quality threats in the American West. SmokeStory exists to make that data legible to the people who need it most.*
+SmokeStory is an independent open-source project. Not affiliated with any government agency, insurance company, or academic institution.
+
+Built by Tina Huang · tina.huang@aya.yale.edu
