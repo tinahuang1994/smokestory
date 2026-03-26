@@ -1203,6 +1203,13 @@
         </div>
       </div>
 
+      <div id="impact-entry-banner" style="display:none;margin-top:12px;padding:14px 16px;background:rgba(4,4,10,0.9);border:1px solid rgba(249,115,22,0.22);border-left:3px solid #f97316;">
+        <div style="font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;color:rgba(249,115,22,0.7);text-transform:uppercase;margin-bottom:6px;">PALISADES &amp; EATON FIRES · JAN 2025</div>
+        <div style="font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:400;color:#fb923c;letter-spacing:-0.02em;line-height:1.1;margin-bottom:4px;">$36B – $40B</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:300;color:rgba(226,226,234,0.5);margin-bottom:12px;">estimated structures destroyed · property only</div>
+        <a href="/impact" target="_blank" style="display:inline-block;font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:#f97316;text-decoration:none;border:1px solid rgba(249,115,22,0.35);padding:5px 10px;">VIEW FINANCIAL ANALYSIS →</a>
+      </div>
+
     </div>
   </div>
 
@@ -1293,10 +1300,13 @@
   HISTORIC_EVENTS.forEach(ev => {
     const item = document.createElement('div');
     item.className = 'event-item';
+    const impactBadge = ev.date === '20250109'
+      ? `<span onclick="event.stopPropagation();window.open('/impact','_blank')" style="cursor:pointer;font-family:'DM Mono',monospace;font-size:0.5rem;letter-spacing:0.1em;color:#f97316;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);padding:2px 6px;border-radius:2px;white-space:nowrap;flex-shrink:0;">$ IMPACT</span>`
+      : '';
     item.innerHTML =
       `<span class="event-year">${ev.year}</span>` +
       `<span class="event-info">` +
-        `<span class="event-name">${ev.name}</span>` +
+        `<span class="event-name" style="display:flex;align-items:center;gap:6px;">${ev.name}${impactBadge}</span>` +
         `<span class="event-location">${ev.location}</span>` +
         `<span class="event-note">${ev.note}</span>` +
       `</span>` +
@@ -1707,6 +1717,8 @@
     // Show historic date banner only for the Palisades default date
     const banner = document.getElementById('historic-banner');
     if (banner) banner.style.display = (date === '20250109') ? 'block' : 'none';
+    const impactBanner = document.getElementById('impact-entry-banner');
+    if (impactBanner) impactBanner.style.display = (date === '20250109') ? 'block' : 'none';
     const tsList = document.getElementById('top-stories-list');
     if (tsList) tsList.innerHTML = '<div class="top-story-empty">Loading…</div>';
 

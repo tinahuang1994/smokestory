@@ -836,6 +836,10 @@
     maxZoom: 19,
   }).addTo(map);
 
+  // ── Custom pane for fire perimeters (z-index 650 keeps them above other overlays) ──
+  map.createPane('firePane');
+  map.getPane('firePane').style.zIndex = 650;
+
   // ── Fire perimeters (approximate visualization polygons — not survey data) ──
   const firePerimeters = {
     type: 'FeatureCollection',
@@ -880,14 +884,18 @@
 
   const fireLayer = L.geoJSON(firePerimeters, {
     style: {
-      fillColor: '#7f1d1d',
-      fillOpacity: 0.4,
+      fillColor: '#ef4444',
+      fillOpacity: 0.15,
       color: '#ef4444',
-      weight: 2,
+      weight: 2.5,
+      pane: 'firePane',
     },
     onEachFeature: (feat, lyr) => {
+      const label = feat.properties.name === 'Palisades Fire'
+        ? 'PALISADES FIRE · 23,700 acres · approx. boundary'
+        : 'EATON FIRE · 14,000 acres · approx. boundary';
       lyr.bindTooltip(
-        `<strong style="color:#ef4444">${feat.properties.name}</strong><br>${feat.properties.acres} acres (approximate)`,
+        `<strong style="color:#ef4444">${label}</strong>`,
         { sticky: true }
       );
     }
@@ -902,7 +910,7 @@
       smokeLayer = L.geoJSON(geojson, {
         style: feat => {
           const d = (feat.properties?.Density || feat.properties?.density || '').toString().toLowerCase();
-          const op = d.includes('heavy') || d === '3' ? 0.6 : d.includes('medium') || d === '2' ? 0.4 : 0.2;
+          const op = d.includes('heavy') || d === '3' ? 0.54 : d.includes('medium') || d === '2' ? 0.36 : 0.18;
           return { fillColor: '#c2410c', fillOpacity: op, color: '#fb923c', weight: 1, opacity: 0.7 };
         }
       });
@@ -919,7 +927,7 @@
       pm25Layer = L.geoJSON(geojson, {
         style: feat => ({
           fillColor: pm25Color(feat.properties.pm25_mean),
-          fillOpacity: feat.properties.pm25_mean != null ? 0.65 : 0.18,
+          fillOpacity: feat.properties.pm25_mean != null ? 0.55 : 0.15,
           color: '#04040a',
           weight: 0.6,
           opacity: 0.8,
