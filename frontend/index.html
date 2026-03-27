@@ -1202,14 +1202,16 @@
     <span class="events-flame">🔥</span>
     <span>Historic Events</span>
   </button>
-  <button id="today-btn" class="today-btn" onclick="jumpToToday()">
-    <span class="today-btn-dot"></span>
-    <span id="today-btn-text">JUMP TO TODAY →</span>
-  </button>
   <div class="date-picker-wrap">
-    <div class="date-picker-inner">
-      <span class="date-picker-icon">📅</span>
-      <input class="date-input" id="date-input" type="text" placeholder="Select date" readonly />
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button id="today-btn" class="today-btn" onclick="jumpToToday()">
+        <span class="today-btn-dot"></span>
+        <span id="today-btn-text">JUMP TO TODAY →</span>
+      </button>
+      <div class="date-picker-inner">
+        <span class="date-picker-icon">📅</span>
+        <input class="date-input" id="date-input" type="text" placeholder="Select date" readonly />
+      </div>
     </div>
     <span style="font-size:0.6rem;color:var(--text-muted);font-style:italic;letter-spacing:0.03em;white-space:nowrap;">Select any date since 2005 to explore historical smoke events</span>
   </div>
