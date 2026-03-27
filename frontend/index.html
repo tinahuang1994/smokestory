@@ -2111,8 +2111,9 @@
 
     const today = todayStr();
     let foundDate = null;
+    let fetchError = false;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const ds = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
@@ -2122,7 +2123,10 @@
         const geojson = await res.json();
         const hasData = geojson.features && geojson.features.some(f => f.properties.pm25_mean != null);
         if (hasData) { foundDate = ds; break; }
-      } catch(e) { /* continue */ }
+      } catch(e) {
+        fetchError = true;
+        break;
+      }
     }
 
     // Reset loading state
@@ -2131,7 +2135,22 @@
     textEl.textContent = 'JUMP TO TODAY →';
     if (dot) dot.style.display = '';
 
-    if (!foundDate) return;
+    if (fetchError) {
+      showToast('Could not connect · Please try again');
+      return;
+    }
+
+    if (!foundDate) {
+      // Last-resort fallback: use 10 days ago
+      const fallback = new Date();
+      fallback.setDate(fallback.getDate() - 10);
+      foundDate = `${fallback.getFullYear()}${String(fallback.getMonth()+1).padStart(2,'0')}${String(fallback.getDate()).padStart(2,'0')}`;
+      datePicker.setDate(foundDate, false);
+      loadMap(foundDate);
+      updateTodayBtn();
+      showToast('Recent data unavailable · Showing most recent available date');
+      return;
+    }
 
     datePicker.setDate(foundDate, false);
     loadMap(foundDate);
