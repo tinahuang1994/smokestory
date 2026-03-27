@@ -561,13 +561,16 @@
       overflow-y: auto;
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
-    #welcome-view::-webkit-scrollbar { width: 2px; }
-    #welcome-view::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.3); }
+    .welcome-scroll-area::-webkit-scrollbar { width: 2px; }
+    .welcome-scroll-area::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.3); }
 
     #welcome-view {
       opacity: 1;
       transform: translateX(0);
       pointer-events: auto;
+      overflow-y: hidden;
+      display: flex;
+      flex-direction: column;
     }
     #county-view {
       opacity: 0;
@@ -589,9 +592,26 @@
 
     /* ── Welcome view content ── */
     .welcome-inner {
-      padding: 36px 28px 48px;
+      padding: 36px 28px 0;
       display: flex;
       flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .welcome-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      padding-bottom: 24px;
+    }
+
+    #palisades-combined-card {
+      flex-shrink: 0;
+      margin-top: auto;
+      border-top: 1px solid rgba(249,115,22,0.2);
+      background: inherit;
     }
 
     .welcome-wordmark {
@@ -1162,43 +1182,45 @@
   <div id="welcome-view">
     <div class="welcome-inner">
 
-      <div class="welcome-wordmark">Smoke Story</div>
-      <div class="welcome-subtitle">California Wildfire Intelligence</div>
-      <div class="welcome-divider"></div>
+      <div class="welcome-scroll-area">
+        <div class="welcome-wordmark">Smoke Story</div>
+        <div class="welcome-subtitle">California Wildfire Intelligence</div>
+        <div class="welcome-divider"></div>
 
-      <div class="welcome-section">
-        <div class="welcome-section-label">What is this</div>
-        <div class="welcome-about">SmokeStory translates raw satellite and sensor data into AI-powered narratives for journalists, researchers, and communities affected by California's wildfires. Every county, every day — a story behind the smoke.</div>
-      </div>
+        <div class="welcome-section">
+          <div class="welcome-section-label">What is this</div>
+          <div class="welcome-about">SmokeStory translates raw satellite and sensor data into AI-powered narratives for journalists, researchers, and communities affected by California's wildfires. Every county, every day — a story behind the smoke.</div>
+        </div>
 
-      <div class="welcome-section">
-        <div class="welcome-section-label">How to explore</div>
-        <div class="welcome-steps">
-          <div class="welcome-step">
-            <div class="step-num">01</div>
-            <div class="step-text">Pick a date or select a historic fire event from the header</div>
-          </div>
-          <div class="welcome-step">
-            <div class="step-num">02</div>
-            <div class="step-text">Click any county on the map to view its air quality data</div>
-          </div>
-          <div class="welcome-step">
-            <div class="step-num">03</div>
-            <div class="step-text">Click Generate Story to get an AI-powered plain-English narrative for that county</div>
+        <div class="welcome-section">
+          <div class="welcome-section-label">How to explore</div>
+          <div class="welcome-steps">
+            <div class="welcome-step">
+              <div class="step-num">01</div>
+              <div class="step-text">Pick a date or select a historic fire event from the header</div>
+            </div>
+            <div class="welcome-step">
+              <div class="step-num">02</div>
+              <div class="step-text">Click any county on the map to view its air quality data</div>
+            </div>
+            <div class="welcome-step">
+              <div class="step-num">03</div>
+              <div class="step-text">Click Generate Story to get an AI-powered plain-English narrative for that county</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Normal top-3 section (hidden when date=20250109) -->
-      <div id="top-stories-section" class="welcome-section">
-        <div class="welcome-section-label" id="top-stories-label">Most Affected Today</div>
-        <div id="top-stories-list">
-          <div class="top-story-empty">Loading…</div>
+        <!-- Normal top-3 section (hidden when date=20250109) -->
+        <div id="top-stories-section" class="welcome-section">
+          <div class="welcome-section-label" id="top-stories-label">Most Affected Today</div>
+          <div id="top-stories-list">
+            <div class="top-story-empty">Loading…</div>
+          </div>
         </div>
-      </div>
+      </div><!-- /.welcome-scroll-area -->
 
       <!-- Combined Palisades card (shown only when date=20250109) -->
-      <div id="palisades-combined-card" style="display:none;margin-top:20px;padding:16px 20px;background:rgba(4,4,10,0.92);border:1px solid rgba(249,115,22,0.22);border-left:3px solid #f97316;">
+      <div id="palisades-combined-card" style="display:none;padding:12px 20px 16px;border-left:3px solid #f97316;">
         <!-- Row 1: section label -->
         <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:10px;">MOST AFFECTED · JANUARY 9, 2025</div>
         <!-- Row 2: county + PM2.5 (clickable) -->
