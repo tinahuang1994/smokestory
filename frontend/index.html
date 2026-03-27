@@ -1108,6 +1108,24 @@
       .logo-sep { display: none; }
       .events-btn span:last-child { display: none; }
     }
+
+    /* Fire marker entrance */
+    .fire-entrance-prep {
+      opacity: 0 !important;
+      transform: scale(0) !important;
+      transform-origin: center center;
+      will-change: transform, opacity;
+    }
+
+    /* GeoJSON entrance prep */
+    .geo-entrance-prep {
+      opacity: 0 !important;
+      fill-opacity: 0 !important;
+      transform: translateY(-12px);
+      transform-box: fill-box;
+      transform-origin: center center;
+      will-change: transform, opacity, fill-opacity;
+    }
   </style>
 </head>
 <body>
@@ -1128,6 +1146,10 @@
     <span class="events-flame">🔥</span>
     <span>Historic Events</span>
   </button>
+  <button id="replayButton" hidden style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;color:#f97316;background:transparent;border:1px solid rgba(249,115,22,0.4);padding:4px 10px;border-radius:3px;cursor:pointer;margin-left:12px;transition:all 0.2s ease;"
+    onmouseover="this.style.background='rgba(249,115,22,0.1)'"
+    onmouseout="this.style.background='transparent'"
+  >▶ REPLAY</button>
   <div class="date-picker-wrap">
     <div class="date-picker-inner">
       <span class="date-picker-icon">📅</span>
@@ -1800,6 +1822,8 @@
       });
 
       setLayer('pm25', layer);
+      window.pm25Layer = layer;
+      requestAnimationFrame(() => SmokeStoryEntrance.markLayerReady('pm25'));
       populateTopStories(featureLayers);
 
       // Cache LA county props for the Palisades combined card click
@@ -1866,6 +1890,8 @@
         },
       });
       setLayer('smoke', layer);
+      window.smokeLayer = layer;
+      requestAnimationFrame(() => SmokeStoryEntrance.markLayerReady('smoke'));
     } catch(e) {
       console.warn('Smoke layer error:', e.message);
     } finally {
@@ -1916,6 +1942,8 @@
         },
       });
       setLayer('fires', layer);
+      window.firesLayer = layer;
+      requestAnimationFrame(() => SmokeStoryEntrance.markLayerReady('fires'));
     } catch(e) {
       console.warn('Fires layer error:', e.message);
     } finally {
@@ -1995,6 +2023,285 @@
 
   // ── Init ──────────────────────────────────────────────────
   loadMap();
+</script>
+
+<script>
+const SmokeStoryEntrance = (() => {
+  const ready = { fires: false, smoke: false, pm25: false };
+  let runToken = 0;
+  let hasStarted = false;
+  let isRunning = false;
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const nextPaint = () => new Promise((r) => requestAnimationFrame(r));
+
+  const num = (v) => (isNaN(+v) ? 0 : +v);
+
+  const fireScore = (f) =>
+    num(f?.properties?.FRP ??
+        f?.properties?.frp ??
+        f?.properties?.frp_mw ?? 0);
+
+  const smokeScore = (f) => {
+    const d = String(
+      f?.properties?.density ??
+      f?.properties?.Density ??
+      f?.properties?.class ?? ""
+    ).toLowerCase();
+    if (d === "heavy") return 3;
+    if (d === "medium") return 2;
+    if (d === "light") return 1;
+    return 0;
+  };
+
+  const pmScore = (f) =>
+    num(f?.properties?.severity ??
+        f?.properties?.pm25 ??
+        f?.properties?.aqi ??
+        f?.properties?.value ?? 0);
+
+  function markerEl(marker) {
+    return marker?.getElement?.() ||
+           marker?._icon || null;
+  }
+
+  async function waitForEl(getter, timeout = 2500) {
+    const start = performance.now();
+    while (performance.now() - start < timeout) {
+      const el = getter();
+      if (el) return el;
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    return null;
+  }
+
+  function prepFire(el) {
+    el.classList.add("fire-entrance-prep");
+    el.style.opacity = "0";
+    el.style.transform = "scale(0)";
+    el.style.transformOrigin = "center center";
+    el.style.willChange = "transform, opacity";
+  }
+
+  function animateFire(el) {
+    el.classList.remove("fire-entrance-prep");
+    el.style.transition =
+      "transform 180ms cubic-bezier(.2,.9,.2,1), " +
+      "opacity 120ms ease";
+    requestAnimationFrame(() => {
+      el.style.opacity = "1";
+      el.style.transform = "scale(1.3)";
+      setTimeout(() => {
+        el.style.transform = "scale(1)";
+      }, 140);
+    });
+  }
+
+  function geoEl(layer) {
+    return layer?.getElement?.() ||
+           layer?._path || null;
+  }
+
+  function prepGeo(layer) {
+    const el = geoEl(layer);
+    if (!el) return;
+    el.classList.add("geo-entrance-prep");
+    el.style.opacity = "0";
+    el.style.fillOpacity = "0";
+    el.style.transform = "translateY(-12px)";
+    el.style.transformBox = "fill-box";
+    el.style.transformOrigin = "center center";
+    el.style.willChange =
+      "transform, opacity, fill-opacity";
+    el.style.transition =
+      "opacity 500ms ease, " +
+      "fill-opacity 500ms ease, " +
+      "transform 500ms ease";
+  }
+
+  function animateGeo(layer, targetStyle) {
+    const el = geoEl(layer);
+    if (el) {
+      el.classList.remove("geo-entrance-prep");
+      el.style.transition =
+        "opacity 500ms ease, " +
+        "fill-opacity 500ms ease, " +
+        "transform 500ms ease";
+      requestAnimationFrame(() => {
+        el.style.transform = "translateY(0)";
+      });
+    }
+    layer.setStyle(targetStyle);
+  }
+
+  function collect(layer) {
+    const out = [];
+    layer?.eachLayer?.((l) => out.push(l));
+    return out;
+  }
+
+  async function revealFires(token) {
+    const markers = collect(window.firesLayer)
+      .sort((a, b) =>
+        fireScore(b.feature) - fireScore(a.feature)
+      );
+
+    for (const m of markers) {
+      if (token !== runToken) return;
+      const el = await waitForEl(
+        () => markerEl(m), 3000
+      );
+      if (el) prepFire(el);
+    }
+
+    const count = markers.length || 1;
+    const totalMs = Math.min(
+      2200, Math.max(800, 900 + count * 4)
+    );
+    const stagger = Math.max(
+      6, Math.floor(totalMs / count)
+    );
+
+    markers.forEach((m, i) => {
+      waitForEl(() => markerEl(m), 3000).then((el) => {
+        if (!el || token !== runToken) return;
+        setTimeout(() => {
+          if (token === runToken) animateFire(el);
+        }, i * stagger);
+      });
+    });
+
+    await sleep(totalMs + 400);
+  }
+
+  async function revealSmoke(token) {
+    const items = collect(window.smokeLayer)
+      .sort((a, b) =>
+        smokeScore(b.feature) - smokeScore(a.feature)
+      );
+    items.forEach(prepGeo);
+
+    const count = items.length || 1;
+    const stagger = Math.max(
+      40, Math.min(180, Math.floor(1200 / count))
+    );
+
+    items.forEach((l, i) => {
+      const target = {
+        opacity: l.options?.opacity ?? 1,
+        fillOpacity: l.options?.fillOpacity ?? 0.35,
+      };
+      setTimeout(() => {
+        if (token === runToken) animateGeo(l, target);
+      }, i * stagger);
+    });
+
+    await sleep(count * stagger + 700);
+  }
+
+  async function revealPm25(token) {
+    const items = collect(window.pm25Layer)
+      .sort((a, b) =>
+        pmScore(b.feature) - pmScore(a.feature)
+      );
+    items.forEach(prepGeo);
+
+    const count = items.length || 1;
+    const stagger = Math.max(
+      25, Math.min(120, Math.floor(1000 / count))
+    );
+
+    items.forEach((l, i) => {
+      const target = {
+        opacity: l.options?.opacity ?? 1,
+        fillOpacity: l.options?.fillOpacity ?? 0.7,
+      };
+      setTimeout(() => {
+        if (token === runToken) animateGeo(l, target);
+      }, i * stagger);
+    });
+
+    await sleep(count * stagger + 700);
+  }
+
+  async function run() {
+    if (isRunning) return;
+    isRunning = true;
+    const token = ++runToken;
+    hasStarted = true;
+
+    try {
+      collect(window.firesLayer).forEach((m) => {
+        const el = markerEl(m);
+        if (el) prepFire(el);
+      });
+
+      window.smokeLayer?.eachLayer?.(
+        (l) => l.setStyle({ opacity: 0, fillOpacity: 0 })
+      );
+      window.pm25Layer?.eachLayer?.(
+        (l) => l.setStyle({ opacity: 0, fillOpacity: 0 })
+      );
+
+      await nextPaint();
+      if (token !== runToken) return;
+
+      await revealFires(token);
+      if (token !== runToken) return;
+
+      await revealSmoke(token);
+      if (token !== runToken) return;
+
+      await revealPm25(token);
+      if (token !== runToken) return;
+
+      const replay = document.getElementById("replayButton");
+      if (replay) replay.hidden = false;
+    } finally {
+      isRunning = false;
+    }
+  }
+
+  function markLayerReady(name) {
+    ready[name] = true;
+    if (ready.fires && ready.smoke &&
+        ready.pm25 && !hasStarted) {
+      run();
+    }
+  }
+
+  function resetAndReplay() {
+    runToken++;
+    hasStarted = false;
+    isRunning = false;
+
+    collect(window.firesLayer).forEach((m) => {
+      const el = markerEl(m);
+      if (el) prepFire(el);
+    });
+
+    window.smokeLayer?.eachLayer?.(
+      (l) => l.setStyle({ opacity: 0, fillOpacity: 0 })
+    );
+    window.pm25Layer?.eachLayer?.(
+      (l) => l.setStyle({ opacity: 0, fillOpacity: 0 })
+    );
+
+    const replay = document.getElementById("replayButton");
+    if (replay) replay.hidden = true;
+
+    if (ready.fires && ready.smoke && ready.pm25) run();
+  }
+
+  return { markLayerReady, resetAndReplay, run };
+})();
+
+window.SmokeStoryEntrance = SmokeStoryEntrance;
+
+document.getElementById("replayButton")
+  ?.addEventListener("click", () =>
+    SmokeStoryEntrance.resetAndReplay()
+  );
 </script>
 
 </body>
