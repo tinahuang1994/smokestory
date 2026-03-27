@@ -1101,6 +1101,80 @@
     /* ── CURSOR ── */
     .leaflet-interactive { cursor: pointer !important; }
 
+    /* ── JUMP TO TODAY BUTTON ── */
+    .today-btn {
+      display: none; /* shown as flex via JS */
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber);
+      background: transparent;
+      border: 1px solid rgba(249,115,22,0.4);
+      border-radius: 20px;
+      padding: 5px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+    }
+    .today-btn:hover {
+      background: rgba(249,115,22,0.12);
+      border-color: var(--amber);
+      color: #fff;
+    }
+    .today-btn:active { transform: scale(0.96); }
+    .today-btn.loading { animation: todoBtnPulse 1s ease infinite; }
+    .today-btn-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--amber);
+      flex-shrink: 0;
+      animation: dotPulse 1.6s ease infinite;
+    }
+    .today-btn:hover .today-btn-dot,
+    .today-btn.loading .today-btn-dot { animation: none; }
+    @keyframes dotPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.7); opacity: 0.5; }
+    }
+    @keyframes todoBtnPulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.45; }
+    }
+
+    /* ── TODAY TOAST ── */
+    #today-toast {
+      position: fixed;
+      top: calc(var(--header) + 10px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-6px);
+      z-index: 1200;
+      background: rgba(10,10,15,0.95);
+      border: 1px solid rgba(249,115,22,0.3);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      padding: 8px 16px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    #today-toast.toast-in {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    #today-toast.toast-out {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-6px);
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 640px) {
       :root { --panel: 100vw; }
@@ -1128,6 +1202,10 @@
     <span class="events-flame">🔥</span>
     <span>Historic Events</span>
   </button>
+  <button id="today-btn" class="today-btn" onclick="jumpToToday()">
+    <span class="today-btn-dot"></span>
+    <span id="today-btn-text">JUMP TO TODAY →</span>
+  </button>
   <div class="date-picker-wrap">
     <div class="date-picker-inner">
       <span class="date-picker-icon">📅</span>
@@ -1136,6 +1214,9 @@
     <span style="font-size:0.6rem;color:var(--text-muted);font-style:italic;letter-spacing:0.03em;white-space:nowrap;">Select any date since 2005 to explore historical smoke events</span>
   </div>
 </div>
+
+<!-- TODAY TOAST -->
+<div id="today-toast"></div>
 
 <!-- HISTORIC EVENTS DROPDOWN -->
 <div id="events-dropdown">
@@ -1374,7 +1455,7 @@
     altInput: true,
     altFormat: 'F j, Y',
     disableMobile: true,
-    onChange: () => loadMap(),
+    onChange: () => { loadMap(); updateTodayBtn(); },
   });
 
   // ── Map setup ─────────────────────────────────────────────
@@ -1996,8 +2077,80 @@
     if (e.key === 'Escape' && eventsOpen) closeEventsPanel();
   });
 
+  // ── Jump To Today ─────────────────────────────────────────
+  function updateTodayBtn() {
+    const btn = document.getElementById('today-btn');
+    if (!btn) return;
+    btn.style.display = (getDate() === todayStr()) ? 'none' : 'flex';
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('today-toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.remove('toast-out');
+    toast.classList.add('toast-in');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+      toast.classList.remove('toast-in');
+      toast.classList.add('toast-out');
+    }, 3000);
+  }
+
+  async function jumpToToday() {
+    const btn = document.getElementById('today-btn');
+    const textEl = document.getElementById('today-btn-text');
+    if (!btn || btn.classList.contains('loading')) return;
+
+    // Loading state
+    btn.classList.add('loading');
+    btn.style.pointerEvents = 'none';
+    textEl.textContent = 'LOADING...';
+    const dot = btn.querySelector('.today-btn-dot');
+    if (dot) dot.style.display = 'none';
+
+    const today = todayStr();
+    let foundDate = null;
+
+    for (let i = 0; i < 5; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const ds = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+      try {
+        const res = await fetch(`${API}/map/pm25/06/${ds}`);
+        if (!res.ok) continue;
+        const geojson = await res.json();
+        const hasData = geojson.features && geojson.features.some(f => f.properties.pm25_mean != null);
+        if (hasData) { foundDate = ds; break; }
+      } catch(e) { /* continue */ }
+    }
+
+    // Reset loading state
+    btn.classList.remove('loading');
+    btn.style.pointerEvents = '';
+    textEl.textContent = 'JUMP TO TODAY →';
+    if (dot) dot.style.display = '';
+
+    if (!foundDate) return;
+
+    datePicker.setDate(foundDate, false);
+    loadMap(foundDate);
+    updateTodayBtn();
+
+    if (foundDate === today) {
+      showToast("Showing today's data");
+    } else {
+      const MONTHS = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
+      const m = parseInt(foundDate.slice(4,6), 10) - 1;
+      const day = parseInt(foundDate.slice(6,8), 10);
+      showToast(`Today's data not yet available · Showing ${MONTHS[m]} ${day}`);
+    }
+  }
+
   // ── Init ──────────────────────────────────────────────────
   loadMap();
+  updateTodayBtn();
 </script>
 
 </body>
