@@ -561,16 +561,13 @@
       overflow-y: auto;
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
-    .welcome-scroll-area::-webkit-scrollbar { width: 2px; }
-    .welcome-scroll-area::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.3); }
+    #welcome-view::-webkit-scrollbar { width: 2px; }
+    #welcome-view::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.3); }
 
     #welcome-view {
       opacity: 1;
       transform: translateX(0);
       pointer-events: auto;
-      overflow-y: hidden;
-      display: flex;
-      flex-direction: column;
     }
     #county-view {
       opacity: 0;
@@ -592,26 +589,9 @@
 
     /* ── Welcome view content ── */
     .welcome-inner {
-      padding: 36px 28px 0;
+      padding: 36px 28px 48px;
       display: flex;
       flex-direction: column;
-      flex: 1;
-      min-height: 0;
-      height: 100%;
-    }
-
-    .welcome-scroll-area {
-      flex: 1;
-      overflow-y: auto;
-      min-height: 0;
-      padding-bottom: 24px;
-    }
-
-    #palisades-combined-card {
-      flex-shrink: 0;
-      margin-top: auto;
-      border-top: 1px solid rgba(249,115,22,0.2);
-      background: inherit;
     }
 
     .welcome-wordmark {
@@ -1182,62 +1162,59 @@
   <div id="welcome-view">
     <div class="welcome-inner">
 
-      <div class="welcome-scroll-area">
-        <div class="welcome-wordmark">Smoke Story</div>
-        <div class="welcome-subtitle">California Wildfire Intelligence</div>
-        <div class="welcome-divider"></div>
+      <div class="welcome-wordmark">Smoke Story</div>
+      <div class="welcome-subtitle">California Wildfire Intelligence</div>
+      <div class="welcome-divider"></div>
 
-        <div class="welcome-section">
-          <div class="welcome-section-label">What is this</div>
-          <div class="welcome-about">SmokeStory translates raw satellite and sensor data into AI-powered narratives for journalists, researchers, and communities affected by California's wildfires. Every county, every day — a story behind the smoke.</div>
-        </div>
+      <div class="welcome-section">
+        <div class="welcome-section-label">What is this</div>
+        <div class="welcome-about">SmokeStory translates raw satellite and sensor data into stories for communities affected by California's wildfires.</div>
+      </div>
 
-        <div class="welcome-section">
-          <div class="welcome-section-label">How to explore</div>
-          <div class="welcome-steps">
-            <div class="welcome-step">
-              <div class="step-num">01</div>
-              <div class="step-text">Pick a date or select a historic fire event from the header</div>
-            </div>
-            <div class="welcome-step">
-              <div class="step-num">02</div>
-              <div class="step-text">Click any county on the map to view its air quality data</div>
-            </div>
-            <div class="welcome-step">
-              <div class="step-num">03</div>
-              <div class="step-text">Click Generate Story to get an AI-powered plain-English narrative for that county</div>
-            </div>
+      <div class="welcome-section">
+        <div class="welcome-section-label">How to explore</div>
+        <div class="welcome-steps">
+          <div class="welcome-step">
+            <div class="step-num">01</div>
+            <div class="step-text">Pick a date or select a historic fire event from the header</div>
+          </div>
+          <div class="welcome-step">
+            <div class="step-num">02</div>
+            <div class="step-text">Click any county on the map to view its air quality data</div>
+          </div>
+          <div class="welcome-step">
+            <div class="step-num">03</div>
+            <div class="step-text">Click Generate Story to get an AI-powered plain-English narrative for that county</div>
           </div>
         </div>
+      </div>
 
-        <!-- Normal top-3 section (hidden when date=20250109) -->
-        <div id="top-stories-section" class="welcome-section">
-          <div class="welcome-section-label" id="top-stories-label">Most Affected Today</div>
-          <div id="top-stories-list">
-            <div class="top-story-empty">Loading…</div>
-          </div>
+      <!-- Normal top-3 section (hidden when date=20250109) -->
+      <div id="top-stories-section" class="welcome-section">
+        <div class="welcome-section-label" id="top-stories-label">Most Affected Today</div>
+        <div id="top-stories-list">
+          <div class="top-story-empty">Loading…</div>
         </div>
-      </div><!-- /.welcome-scroll-area -->
+      </div>
 
       <!-- Combined Palisades card (shown only when date=20250109) -->
-      <div id="palisades-combined-card" style="display:none;padding:12px 20px 16px;border-left:3px solid #f97316;">
-        <!-- Row 1: section label -->
-        <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:10px;">MOST AFFECTED · JANUARY 9, 2025</div>
-        <!-- Row 2: county + PM2.5 (clickable) -->
-        <div id="palisades-county-row" style="display:flex;align-items:center;gap:12px;padding:8px 10px;cursor:pointer;border:1px solid transparent;border-left-color:transparent;transition:border-color 0.2s,background 0.2s;margin-bottom:10px;" onmouseenter="this.style.borderLeftColor='#f97316';this.style.background='rgba(249,115,22,0.05)'" onmouseleave="this.style.borderLeftColor='transparent';this.style.background='transparent'">
-          <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div>
-          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:0.95rem;font-weight:400;color:var(--text);flex:1;line-height:1.3;">Los Angeles County</div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.06em;color:#f97316;flex-shrink:0;">44.8 µg/m³</div>
+      <div id="palisades-combined-card" style="display:none;">
+        <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;margin-top:8px;">
+          <!-- Section label -->
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:10px;">MOST AFFECTED · JANUARY 9, 2025</div>
+          <!-- LA County row (clickable) -->
+          <div id="palisades-county-row" style="display:flex;align-items:center;gap:12px;padding:8px 10px;cursor:pointer;border:1px solid transparent;border-left-color:transparent;transition:border-color 0.2s,background 0.2s;" onmouseenter="this.style.borderLeftColor='#f97316';this.style.background='rgba(249,115,22,0.05)'" onmouseleave="this.style.borderLeftColor='transparent';this.style.background='transparent'">
+            <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div>
+            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:0.95rem;font-weight:400;color:var(--text);flex:1;line-height:1.3;">Los Angeles County</div>
+            <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.06em;color:#f97316;flex-shrink:0;">44.8 µg/m³</div>
+          </div>
+          <!-- Financial number -->
+          <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:400;color:#f97316;letter-spacing:-0.02em;line-height:1.1;margin-top:10px;">$36B – $40B</div>
+          <!-- Financial label -->
+          <div style="font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:300;color:rgba(255,255,255,0.45);margin-top:4px;">estimated structures destroyed · property only</div>
+          <!-- Full-width CTA -->
+          <button onclick="window.open('/impact','_blank')" style="width:100%;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:#f97316;background:transparent;border:1px solid rgba(249,115,22,0.5);padding:8px 10px;border-radius:3px;cursor:pointer;margin-top:12px;transition:background 0.2s;" onmouseenter="this.style.background='rgba(249,115,22,0.1)'" onmouseleave="this.style.background='transparent'">VIEW FINANCIAL ANALYSIS →</button>
         </div>
-        <!-- Row 3: fire context -->
-        <div style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:300;color:rgba(255,255,255,0.5);margin-bottom:14px;">📅 Palisades &amp; Eaton Fires — Jan 9, 2025</div>
-        <!-- Row 4: financial number + inline CTA -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:400;color:#f97316;letter-spacing:-0.02em;line-height:1.1;">$36B – $40B</div>
-          <button onclick="window.open('/impact','_blank')" style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:#f97316;background:transparent;border:1px solid rgba(249,115,22,0.5);padding:5px 10px;border-radius:3px;cursor:pointer;white-space:nowrap;transition:background 0.2s;" onmouseenter="this.style.background='rgba(249,115,22,0.1)'" onmouseleave="this.style.background='transparent'">VIEW ANALYSIS →</button>
-        </div>
-        <!-- Row 5: financial label -->
-        <div style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:300;color:rgba(255,255,255,0.5);">estimated structures destroyed · property only</div>
       </div>
 
       <!-- Legacy banners (kept in DOM, permanently hidden — replaced by combined card) -->
