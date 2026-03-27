@@ -1840,7 +1840,10 @@
       const geojson = await res.json();
       const count = geojson.features ? geojson.features.length : 0;
       console.log(`[SMOKE] ${count} smoke polygon(s) returned for ${date}`);
-      if (count === 0) return;
+      if (count === 0) {
+        setLayer('smoke', L.geoJSON());
+        return;
+      }
 
       const layer = L.geoJSON(geojson, {
         style: feat => {
@@ -1882,7 +1885,8 @@
       const count = geojson.features ? geojson.features.length : 0;
       console.log(`[FIRES] ${count} fire point(s) returned for ${date}`);
       if (count === 0) {
-        console.warn('[FIRES] No fire features in response for', date);
+        console.warn('[FIRES] No fire features for', date);
+        setLayer('fires', L.geoJSON());
         return;
       }
 
