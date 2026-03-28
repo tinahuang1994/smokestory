@@ -1182,6 +1182,43 @@
       .logo-sep { display: none; }
       .events-btn span:last-child { display: none; }
     }
+
+    /* ── INTRO OVERLAY ── */
+    #intro-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(5, 5, 15, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    #intro-line-1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-style: italic;
+      font-size: 1.8rem;
+      color: rgba(255,255,255,0.9);
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      margin-bottom: 0.5rem;
+    }
+
+    #intro-line-2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-style: italic;
+      font-size: 1.8rem;
+      color: #f97316;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    #intro-overlay.fade-out {
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
   </style>
 </head>
 <body>
@@ -1241,13 +1278,14 @@
 <!-- SIDE PANEL -->
 <div id="side-panel">
 
+<div id="intro-overlay">
+  <p id="intro-line-1">January 2025.</p>
+  <p id="intro-line-2">Los Angeles is burning.</p>
+</div>
+
   <!-- WELCOME VIEW (visible on load) -->
   <div id="welcome-view">
     <div class="welcome-inner">
-
-      <div class="welcome-wordmark">Smoke Story</div>
-      <div class="welcome-subtitle">California Wildfire Intelligence</div>
-      <div class="welcome-divider"></div>
 
       <div class="welcome-section">
         <div class="welcome-section-label">What is this</div>
@@ -2172,6 +2210,41 @@
   // ── Init ──────────────────────────────────────────────────
   loadMap();
   updateTodayBtn();
+</script>
+
+<script>
+(function() {
+  var overlay = document.getElementById('intro-overlay');
+  var line1 = document.getElementById('intro-line-1');
+  var line2 = document.getElementById('intro-line-2');
+  if (!overlay || !line1 || !line2) return;
+
+  // Line 1 fades in at 0.5s
+  setTimeout(function() {
+    line1.style.opacity = '1';
+  }, 500);
+
+  // Line 2 fades in at 1.5s
+  setTimeout(function() {
+    line2.style.opacity = '1';
+  }, 1500);
+
+  // Both fade out at 3s
+  setTimeout(function() {
+    line1.style.opacity = '0';
+    line2.style.opacity = '0';
+  }, 3000);
+
+  // Overlay fades out at 3.8s
+  setTimeout(function() {
+    overlay.classList.add('fade-out');
+  }, 3800);
+
+  // Overlay removed at 4.5s
+  setTimeout(function() {
+    overlay.style.display = 'none';
+  }, 4500);
+})();
 </script>
 
 </body>
