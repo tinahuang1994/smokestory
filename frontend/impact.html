@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -31,7 +31,7 @@
       --text-muted:   #40405a;
       --serif:        'Cormorant Garamond', Georgia, serif;
       --mono:         'DM Mono', 'Courier New', monospace;
-      --sans:         'DM Sans', system-ui, sans-serif;
+      --sans:         'DM Mono', monospace;
       --header:       56px;
       --ease:         cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -40,6 +40,8 @@
       min-height: 100%;
       font-family: var(--sans);
       font-weight: 300;
+      letter-spacing: 0.01em;
+      line-height: 1.6;
       background: var(--bg);
       color: var(--text);
       overflow-x: hidden;
@@ -208,6 +210,8 @@
       font-size: 1.1rem;
       font-weight: 300;
       color: #fff;
+      letter-spacing: 0.01em;
+      line-height: 1.6;
       margin-bottom: 6px;
     }
 
@@ -225,6 +229,8 @@
       font-size: 0.75rem;
       font-weight: 300;
       color: var(--text-muted);
+      letter-spacing: 0.01em;
+      line-height: 1.6;
       margin-bottom: 28px;
     }
 
@@ -237,6 +243,7 @@
       color: rgba(255,255,255,0.55);
       font-style: italic;
       line-height: 1.65;
+      letter-spacing: 0.01em;
       border-left: 3px solid rgba(249,115,22,0.4);
       padding: 10px 16px;
       text-align: left;
@@ -343,7 +350,8 @@
       font-size: 0.88rem;
       font-weight: 400;
       color: #fff;
-      line-height: 1.4;
+      line-height: 1.6;
+      letter-spacing: 0.01em;
     }
 
     .card-desc {
@@ -352,6 +360,7 @@
       font-weight: 300;
       color: var(--text-dim);
       line-height: 1.65;
+      letter-spacing: 0.01em;
     }
 
     .card-expand-trigger {
@@ -377,6 +386,7 @@
       font-weight: 300;
       color: var(--text);
       line-height: 1.75;
+      letter-spacing: 0.01em;
       padding-top: 8px;
       border-top: 1px solid var(--border);
     }
@@ -531,6 +541,7 @@
       font-weight: 300;
       color: var(--text-muted);
       line-height: 1.65;
+      letter-spacing: 0.01em;
       font-style: italic;
     }
 

@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono&display=swap" rel="stylesheet" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,7 +28,7 @@
       --text-muted:   #40405a;
       --serif:        'Cormorant Garamond', Georgia, serif;
       --mono:         'DM Mono', 'Courier New', monospace;
-      --sans:         'DM Sans', system-ui, sans-serif;
+      --sans:         'DM Mono', monospace;
       --header:       56px;
       --ease:         cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -37,6 +37,8 @@
       min-height: 100%;
       font-family: var(--sans);
       font-weight: 300;
+      letter-spacing: 0.01em;
+      line-height: 1.6;
       background: var(--bg);
       color: var(--text);
       overflow-x: hidden;
@@ -183,6 +185,7 @@
       font-weight: 300;
       color: var(--text-dim);
       line-height: 1.75;
+      letter-spacing: 0.01em;
     }
 
     /* ── SECTION HEADERS ── */
@@ -214,6 +217,7 @@
       font-weight: 300;
       color: var(--text-dim);
       line-height: 1.8;
+      letter-spacing: 0.01em;
       margin-bottom: 14px;
     }
 
@@ -311,6 +315,7 @@
       font-weight: 300;
       color: var(--text-dim);
       line-height: 1.7;
+      letter-spacing: 0.01em;
       padding: 6px 0;
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -336,6 +341,7 @@
       font-weight: 300;
       color: var(--text-dim);
       line-height: 1.7;
+      letter-spacing: 0.01em;
       padding: 6px 0 6px 14px;
       border-left: 2px solid var(--border);
       margin-bottom: 8px;

@@ -8,7 +8,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -35,7 +35,7 @@
       --text-muted:   #40405a;
       --serif:        'Cormorant Garamond', Georgia, serif;
       --mono:         'DM Mono', 'Courier New', monospace;
-      --sans:         'DM Sans', system-ui, sans-serif;
+      --sans:         'DM Mono', monospace;
       --panel:        380px;
       --header:       56px;
       --ease:         cubic-bezier(0.16, 1, 0.3, 1);
@@ -46,6 +46,8 @@
       overflow: hidden;
       font-family: var(--sans);
       font-weight: 300;
+      letter-spacing: 0.01em;
+      line-height: 1.6;
       background: var(--bg);
       color: var(--text);
     }
@@ -671,6 +673,7 @@
       font-weight: 300;
       color: var(--text-dim);
       line-height: 1.6;
+      letter-spacing: 0.01em;
       padding-top: 1px;
     }
 
@@ -1018,6 +1021,7 @@
       font-size: 0.76rem;
       color: var(--text-dim);
       line-height: 1.65;
+      letter-spacing: 0.01em;
       z-index: 9999;
       box-shadow: 0 8px 40px rgba(0,0,0,0.7);
       pointer-events: none;
@@ -1333,7 +1337,7 @@
           <!-- Financial number -->
           <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:400;color:#f97316;letter-spacing:-0.02em;line-height:1.1;margin-top:10px;text-align:center;">$36B – $40B</div>
           <!-- Financial label -->
-          <div style="font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:300;color:rgba(255,255,255,0.45);margin-top:4px;text-align:center;">estimated structures destroyed · property only</div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:300;color:rgba(255,255,255,0.45);margin-top:4px;text-align:center;">estimated structures destroyed · property only</div>
           <!-- Full-width CTA -->
           <button onclick="window.open('/impact','_blank')" style="width:100%;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:#f97316;background:transparent;border:1px solid rgba(249,115,22,0.5);padding:8px 10px;border-radius:3px;cursor:pointer;margin-top:12px;margin-bottom:28px;transition:background 0.2s;" onmouseenter="this.style.background='rgba(249,115,22,0.1)'" onmouseleave="this.style.background='transparent'">VIEW FINANCIAL ANALYSIS →</button>
         </div>
@@ -1351,11 +1355,11 @@
     <div class="panel-header">
       <button class="panel-close" onclick="closePanel()">✕</button>
       <div class="panel-county" id="panel-county">County Name</div>
-      <div id="panel-location" style="font-size:0.6rem;color:rgba(249,115,22,0.55);letter-spacing:0.24em;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:300;margin-bottom:18px;"></div>
+      <div id="panel-location" style="font-size:0.6rem;color:rgba(249,115,22,0.55);letter-spacing:0.24em;text-transform:uppercase;font-family:'DM Mono',monospace;font-weight:300;margin-bottom:18px;"></div>
       <div class="badge-row" id="panel-badges"></div>
     </div>
     <div class="panel-body">
-      <div id="panel-dq-warning" style="display:none; border-left: 3px solid #f97316; background: rgba(249,115,22,0.08); padding: 10px 14px; margin: 12px 0; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: #f97316; line-height: 1.5;"></div>
+      <div id="panel-dq-warning" style="display:none; border-left: 3px solid #f97316; background: rgba(249,115,22,0.08); padding: 10px 14px; margin: 12px 0; font-family: 'DM Mono', monospace; font-size: 0.75rem; color: #f97316; line-height: 1.6; letter-spacing: 0.01em;"></div>
       <div id="narrative-area">
         <div id="narrative-output"></div>
       </div>
@@ -1753,7 +1757,7 @@
                         `letter-spacing:-0.02em;line-height:1;margin-bottom:6px;">` +
               `$36B — $40B` +
             `</div>` +
-            `<div style="font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:300;` +
+            `<div style="font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:300;` +
                         `color:#7a7a92;margin-bottom:12px;">` +
               `in structures destroyed · LA County · Jan 2025` +
             `</div>` +
@@ -1821,7 +1825,7 @@
       out.style.opacity = '1';
       out.innerHTML =
         `<div style="padding:12px 0;">` +
-          `<div style="color:#f87171;font-family:'DM Sans',sans-serif;font-size:0.82rem;line-height:1.6;">${escHtml(msg)}</div>` +
+          `<div style="color:#f87171;font-family:'DM Mono',monospace;font-size:0.82rem;line-height:1.6;letter-spacing:0.01em;">${escHtml(msg)}</div>` +
           `<button onclick="generateStory()" style="margin-top:14px;background:transparent;border:1px solid var(--amber);` +
             `color:var(--amber);font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;` +
             `text-transform:uppercase;padding:7px 18px;cursor:pointer;">Retry</button>` +
