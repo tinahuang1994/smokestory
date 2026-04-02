@@ -533,6 +533,44 @@
       border-bottom-color: rgba(255,255,255,0.4);
     }
 
+    /* ── SOURCES ── */
+    .sources-section {
+      margin-bottom: 28px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+    .sources-title {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--amber);
+      opacity: 0.7;
+      margin-bottom: 14px;
+    }
+    .sources-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .source-item {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.7;
+      letter-spacing: 0.02em;
+    }
+    .source-item a {
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .source-item a:hover {
+      color: rgba(255,255,255,0.65);
+      border-bottom-color: rgba(255,255,255,0.35);
+    }
+
     /* ── FOOTER — FIX 1: Separate Claude AI ── */
     .page-footer {
       text-align: center;
@@ -579,7 +617,7 @@
     <div class="hero-eyebrow">Los Angeles County · January 2025</div>
     <h1 class="hero-title">Palisades &amp; Eaton Fires<br>Financial Impact</h1>
     <div class="hero-stats">
-      29 Lives Lost <span>·</span> 150,000 Residents Displaced
+      29 Lives Lost <span>·</span> ~180,000 Residents Displaced at Peak
     </div>
   </div>
 
@@ -729,10 +767,24 @@
     <div class="disclaimer-text">
       These three estimates measure different things and must not be added together.<br>
       All figures are preliminary estimates using public data and established methodology.<br>
-      Data vintage: CAL FIRE February 5, 2025 · CAR 2024 · EPA AQS January 2025.<br>
+      Data vintage: CAR 2024 · EPA AQS January 2025.<br>
       SmokeStory is an independent open-source project, not an insurance company, government agency, or academic institution.
     </div>
     <a href="/methodology" class="methodology-link">Read Full Methodology →</a>
+  </div>
+
+  <!-- SOURCES -->
+  <div class="sources-section">
+    <div class="sources-title">Sources &amp; Citations</div>
+    <div class="sources-list">
+      <div class="source-item"><strong style="color:rgba(255,255,255,0.55);">Deaths (29):</strong> LA County Medical Examiner confirmed toll as of January 31, 2025 — 12 from Palisades Fire, 17 from Eaton Fire. Source: CAL FIRE incident reports; Los Angeles Times, Jan. 31, 2025.</div>
+      <div class="source-item"><strong style="color:rgba(255,255,255,0.55);">Evacuations (~180,000 at peak):</strong> LA County Sheriff Robert Luna press conference, January 9, 2025. Reported by CNBC and AP. Additional residents under evacuation warnings brought the total affected to over 300,000.</div>
+      <div class="source-item"><strong style="color:rgba(255,255,255,0.55);">Structure count (16,249):</strong> CAL FIRE Damage Inspection (DINS) report, February 5, 2025.</div>
+      <div class="source-item"><strong style="color:rgba(255,255,255,0.55);">Home values (Pacific Palisades $3.3M, Altadena $1.4M):</strong> California Association of Realtors, 2024 median sales data.</div>
+      <div class="source-item"><strong style="color:rgba(255,255,255,0.55);">Nearby property value loss (2.2%):</strong> Sathaye et al. (2024), "Wildfire risk and housing markets," Landscape and Urban Planning.</div>
+      <div class="source-item"><strong style="color:rgba(255,255,255,0.55);">Health cost methodology:</strong> EPA BenMAP Technical Support Document (2023). Air quality data: EPA AQS, January 2025.</div>
+      <div class="source-item"><strong style="color:rgba(255,255,255,0.55);">Comparison estimates:</strong> Moody's RMS (insured losses, Jan. 2025); Milliman (insured losses, Feb. 2025); UCLA Anderson School of Management economic impact report, February 2025.</div>
+    </div>
   </div>
 
   <!-- FIX 2: Author attribution -->
@@ -742,7 +794,7 @@
 
   <!-- FIX 1: Footer with Claude AI separated from data sources -->
   <div class="page-footer">
-    <div class="page-footer-data">Data: NOAA HMS &nbsp;·&nbsp; EPA AQS &nbsp;·&nbsp; NASA VIIRS &nbsp;·&nbsp; CAL FIRE</div>
+    <div class="page-footer-data">Data: EPA AQS &nbsp;·&nbsp; CAL FIRE FRAP &nbsp;·&nbsp; California Association of Realtors &nbsp;·&nbsp; EPA BenMAP</div>
     <div class="page-footer-ai">Narratives Powered by Claude AI</div>
   </div>
 
