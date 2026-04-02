@@ -539,6 +539,10 @@
       flex-shrink: 0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes live-pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(249,115,22,0.5); }
+      50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(249,115,22,0); }
+    }
 
     /* ── SIDE PANEL ── */
     #side-panel {
@@ -592,9 +596,11 @@
 
     /* ── Welcome view content ── */
     .welcome-inner {
-      padding: 36px 28px 0;
+      padding: 36px 28px 36px;
       display: flex;
       flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
     }
 
     .welcome-wordmark {
@@ -625,7 +631,7 @@
     }
 
     .welcome-section {
-      margin-bottom: 28px;
+      margin-bottom: 0;
     }
 
     .welcome-section-label {
@@ -1255,7 +1261,12 @@
         <input class="date-input" id="date-input" type="text" placeholder="Select date" readonly />
       </div>
     </div>
-    <span style="font-size:0.6rem;color:var(--text-muted);font-style:italic;letter-spacing:0.03em;white-space:nowrap;">Select any date since 2005 to explore historical smoke events</span>
+    <span style="font-size:0.6rem;color:var(--text-muted);font-style:italic;letter-spacing:0.03em;white-space:nowrap;display:flex;align-items:center;gap:6px;">
+      <span style="display:inline-flex;align-items:center;gap:4px;color:rgba(249,115,22,0.75);font-style:normal;letter-spacing:0.1em;font-size:0.55rem;">
+        <span style="width:5px;height:5px;border-radius:50%;background:#f97316;flex-shrink:0;animation:live-pulse 2s ease-in-out infinite;"></span>LIVE
+      </span>
+      Any date since 2005 · today's data available
+    </span>
   </div>
 </div>
 
@@ -1294,7 +1305,7 @@
 
       <div class="welcome-section">
         <div class="welcome-section-label">What is this</div>
-        <div class="welcome-about">SmokeStory translates raw satellite and sensor data into stories for communities affected by California's wildfires.</div>
+        <div class="welcome-about">SmokeStory translates raw satellite and sensor data into stories for communities affected by California's wildfires. Data updates daily — you can explore near-real-time air quality including today.</div>
       </div>
 
       <div class="welcome-section">
@@ -1302,7 +1313,7 @@
         <div class="welcome-steps">
           <div class="welcome-step">
             <div class="step-num">01</div>
-            <div class="step-text">Pick a date or select a historic fire event from the header</div>
+            <div class="step-text">Pick any date — including today — to explore near-real-time satellite data, or choose a historic fire event from the header</div>
           </div>
           <div class="welcome-step">
             <div class="step-num">02</div>

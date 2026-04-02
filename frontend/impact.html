@@ -9,9 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -317,12 +314,12 @@
     .card-badge {
       display: inline-block;
       font-family: var(--mono);
-      font-size: 0.5rem;
-      letter-spacing: 0.12em;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 3px 8px;
-      border: 1px solid rgba(255,255,255,0.15);
-      color: var(--text-muted);
+      padding: 4px 10px;
+      border: 1px solid rgba(255,255,255,0.22);
+      color: rgba(180,180,200,0.8);
     }
 
     .card-badge.amber-outline {
@@ -401,11 +398,7 @@
       line-height: 1.6;
     }
 
-    /* ── SECTION 4: MAP ── */
-    .map-section {
-      margin-bottom: 60px;
-    }
-
+    /* ── SECTION 4: COMPARISON (was MAP, now removed) ── */
     .section-title {
       font-family: var(--serif);
       font-size: 1.9rem;
@@ -421,63 +414,6 @@
       text-transform: uppercase;
       color: var(--text-muted);
       margin-bottom: 20px;
-    }
-
-    #impact-map {
-      height: 50vh;
-      min-height: 320px;
-      border: 1px solid var(--border);
-    }
-
-    /* FIX 4: Map perimeter note */
-    .map-perimeter-note {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: rgba(255,255,255,0.4);
-      font-style: italic;
-      text-align: center;
-      margin-top: 8px;
-      letter-spacing: 0.04em;
-    }
-
-    .leaflet-control-attribution {
-      background: rgba(0,0,0,0.6) !important;
-      color: #383848 !important;
-      font-size: 9px !important;
-      font-family: var(--mono) !important;
-    }
-    .leaflet-control-attribution a { color: #44445a !important; }
-
-    .leaflet-tooltip {
-      background: rgba(10,10,15,0.95) !important;
-      border: 1px solid rgba(249,115,22,0.6) !important;
-      border-radius: 0 !important;
-      color: #fff !important;
-      font-family: 'DM Mono', monospace !important;
-      font-size: 0.72rem !important;
-      letter-spacing: 0.04em !important;
-      padding: 6px 10px !important;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.7) !important;
-    }
-    .leaflet-tooltip-top::before {
-      border-top-color: rgba(249,115,22,0.6) !important;
-    }
-
-    /* layer control dark */
-    .leaflet-control-layers {
-      background: rgba(4,4,10,0.95) !important;
-      border: 1px solid var(--border-amber) !important;
-      border-radius: 0 !important;
-      color: var(--text-dim) !important;
-    }
-    .leaflet-control-layers label {
-      font-family: var(--mono) !important;
-      font-size: 0.62rem !important;
-      letter-spacing: 0.06em !important;
-      color: var(--text-dim) !important;
-    }
-    .leaflet-control-layers-separator {
-      border-top-color: var(--border) !important;
     }
 
     /* ── SECTION 5: COMPARISON ── */
@@ -732,15 +668,6 @@
     </div><!-- end cards-grid -->
   </div>
 
-  <!-- SECTION 4: MAP -->
-  <div class="map-section">
-    <div class="section-title">Fire Perimeters &amp; Air Quality</div>
-    <div class="section-subtitle">January 9, 2025 · Los Angeles County</div>
-    <div id="impact-map"></div>
-    <!-- FIX 4: Perimeter approximation notice -->
-    <div class="map-perimeter-note">Fire perimeter boundaries are approximate polygons for visualization. Source: CAL FIRE FRAP.</div>
-  </div>
-
   <!-- SECTION 5: COMPARISON -->
   <div class="comparison-section">
     <div class="section-title">How This Compares to Other Estimates</div>
@@ -833,154 +760,6 @@
     btn.textContent = isOpen ? 'How We Calculated This ↓' : 'How We Calculated This ↑';
   }
 
-  // ── Map setup ─────────────────────────────────────────────
-  const map = L.map('impact-map', {
-    center: [34.05, -118.25],
-    zoom: 10,
-    zoomControl: true,
-    attributionControl: true,
-  });
-
-  L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://carto.com">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
-    subdomains: 'abcd',
-    maxZoom: 19,
-  }).addTo(map);
-
-  // ── Custom pane for fire perimeters (z-index 650 keeps them above other overlays) ──
-  map.createPane('firePane');
-  map.getPane('firePane').style.zIndex = 650;
-
-  // ── Fire perimeters (approximate visualization polygons — not survey data) ──
-  const firePerimeters = {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        properties: { name: 'Palisades Fire', acres: '23,448' },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[
-            [-118.60, 34.04],
-            [-118.54, 34.01],
-            [-118.46, 34.04],
-            [-118.42, 34.08],
-            [-118.44, 34.13],
-            [-118.50, 34.15],
-            [-118.57, 34.13],
-            [-118.62, 34.09],
-            [-118.60, 34.04]
-          ]]
-        }
-      },
-      {
-        type: 'Feature',
-        properties: { name: 'Eaton Fire', acres: '14,117' },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[
-            [-118.15, 34.16],
-            [-118.07, 34.15],
-            [-118.03, 34.18],
-            [-118.04, 34.24],
-            [-118.09, 34.27],
-            [-118.16, 34.25],
-            [-118.18, 34.20],
-            [-118.15, 34.16]
-          ]]
-        }
-      }
-    ]
-  };
-
-  const fireLayer = L.geoJSON(firePerimeters, {
-    style: {
-      fillColor: '#ef4444',
-      fillOpacity: 0.15,
-      color: '#ef4444',
-      weight: 2.5,
-      pane: 'firePane',
-    },
-    onEachFeature: (feat, lyr) => {
-      const label = feat.properties.name === 'Palisades Fire'
-        ? 'PALISADES FIRE · 23,700 acres · approx. boundary'
-        : 'EATON FIRE · 14,000 acres · approx. boundary';
-      lyr.bindTooltip(
-        `<strong style="color:#ef4444">${label}</strong>`,
-        { sticky: true }
-      );
-    }
-  });
-
-  // ── Smoke layer ───────────────────────────────────────────
-  let smokeLayer = null;
-  fetch(`${API}/map/smoke/20250109`)
-    .then(r => r.ok ? r.json() : null)
-    .then(geojson => {
-      if (!geojson) return;
-      smokeLayer = L.geoJSON(geojson, {
-        style: feat => {
-          const d = (feat.properties?.Density || feat.properties?.density || '').toString().toLowerCase();
-          const op = d.includes('heavy') || d === '3' ? 0.54 : d.includes('medium') || d === '2' ? 0.36 : 0.18;
-          return { fillColor: '#c2410c', fillOpacity: op, color: '#fb923c', weight: 1, opacity: 0.7 };
-        }
-      });
-      updateLayers();
-    })
-    .catch(() => {});
-
-  // ── PM2.5 layer ───────────────────────────────────────────
-  let pm25Layer = null;
-  fetch(`${API}/map/pm25/06/20250109`)
-    .then(r => r.ok ? r.json() : null)
-    .then(geojson => {
-      if (!geojson) return;
-      pm25Layer = L.geoJSON(geojson, {
-        style: feat => ({
-          fillColor: pm25Color(feat.properties.pm25_mean),
-          fillOpacity: feat.properties.pm25_mean != null ? 0.55 : 0.15,
-          color: '#04040a',
-          weight: 0.6,
-          opacity: 0.8,
-        })
-      });
-      updateLayers();
-    })
-    .catch(() => {});
-
-  function pm25Color(val) {
-    if (val == null)    return '#1a1a2e';
-    if (val <= 9.0)     return '#22c55e';
-    if (val <= 35.4)    return '#eab308';
-    if (val <= 55.4)    return '#f97316';
-    if (val <= 150.4)   return '#ef4444';
-    if (val <= 250.4)   return '#a855f7';
-    return '#7e22ce';
-  }
-
-  // ── Layer control ─────────────────────────────────────────
-  const overlays = {
-    'Fire Perimeters (approx.)': fireLayer,
-  };
-
-  let layerControl = L.control.layers(null, overlays, { position: 'topright', collapsed: false }).addTo(map);
-  fireLayer.addTo(map);
-
-  let smokeAdded = false;
-  let pm25Added = false;
-
-  function updateLayers() {
-    if (smokeLayer && !smokeAdded) {
-      smokeAdded = true;
-      layerControl.addOverlay(smokeLayer, 'Smoke Plumes');
-      smokeLayer.addTo(map);
-    }
-    if (pm25Layer && !pm25Added) {
-      pm25Added = true;
-      layerControl.addOverlay(pm25Layer, 'PM2.5 Counties');
-      pm25Layer.addTo(map);
-    }
-  }
 </script>
 
 </body>
