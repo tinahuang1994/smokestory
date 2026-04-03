@@ -568,13 +568,23 @@
       overflow-y: auto;
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
-    #welcome-view::-webkit-scrollbar { width: 2px; }
-    #welcome-view::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.3); }
-
     #welcome-view {
       opacity: 1;
       transform: translateX(0);
       pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    #welcome-scroll {
+      flex: 1;
+      overflow-y: auto;
+    }
+    #welcome-scroll::-webkit-scrollbar { width: 2px; }
+    #welcome-scroll::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.3); }
+    #welcome-cta {
+      flex-shrink: 0;
+      padding: 0 28px 20px;
+      background: linear-gradient(180deg, rgba(8,8,15,0) 0%, #08080f 30%);
     }
     #county-view {
       opacity: 0;
@@ -596,11 +606,10 @@
 
     /* ── Welcome view content ── */
     .welcome-inner {
-      padding: 36px 28px 36px;
+      padding: 36px 28px 24px;
       display: flex;
       flex-direction: column;
-      height: 100%;
-      justify-content: space-between;
+      gap: 28px;
     }
 
     .welcome-wordmark {
@@ -1311,63 +1320,69 @@
 
   <!-- WELCOME VIEW (visible on load) -->
   <div id="welcome-view">
-    <div class="welcome-inner">
+    <div id="welcome-scroll">
+      <div class="welcome-inner">
 
-      <div class="welcome-section">
-        <div class="welcome-section-label">What is this</div>
-        <div class="welcome-about">SmokeStory translates satellite and sensor data into stories for communities affected by California's wildfires. Fire detections update every few hours from NASA; smoke polygons update daily from NOAA. County air quality (PM2.5) is powered by EPA ground monitors — that data typically lags 4–8 weeks.</div>
-      </div>
+        <div class="welcome-section">
+          <div class="welcome-section-label">What is this</div>
+          <div class="welcome-about">SmokeStory turns wildfire data into readable stories for California communities.</div>
+          <div class="welcome-about" style="margin-top:8px;">Fires: hourly (NASA) · Smoke: daily (NOAA) · PM2.5: 4–8 week lag (EPA)</div>
+        </div>
 
-      <div class="welcome-section">
-        <div class="welcome-section-label">How to explore</div>
-        <div class="welcome-steps">
-          <div class="welcome-step">
-            <div class="step-num">01</div>
-            <div class="step-text">You're looking at January 9, 2025 — the peak of the LA fires. Click LA County on the map, then hit Generate Story to read what happened</div>
-          </div>
-          <div class="welcome-step">
-            <div class="step-num">02</div>
-            <div class="step-text">Explore other historic smoke events using the Historic Events menu in the header, or pick any date back to 2005 with the date picker</div>
-          </div>
-          <div class="welcome-step">
-            <div class="step-num">03</div>
-            <div class="step-text">Hit "Latest Data" to see today's active fire hotspots and smoke — county air quality won't be available yet due to EPA's 4–8 week data lag</div>
+        <div class="welcome-section">
+          <div class="welcome-section-label">How to explore</div>
+          <div class="welcome-steps">
+            <div class="welcome-step">
+              <div class="step-num">01</div>
+              <div class="step-text">Jan 9, 2025 — peak of the LA fires. Click LA County → Generate Story, then hit View Financial Analysis</div>
+            </div>
+            <div class="welcome-step">
+              <div class="step-num">02</div>
+              <div class="step-text">Browse Historic Events in the header, or pick any date back to 2005</div>
+            </div>
+            <div class="welcome-step">
+              <div class="step-num">03</div>
+              <div class="step-text">Latest Data shows today's fires and smoke — PM2.5 lags 4–8 weeks</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Normal top-3 section (hidden when date=20250109) -->
-      <div id="top-stories-section" class="welcome-section">
-        <div class="welcome-section-label" id="top-stories-label">Most Affected Today</div>
-        <div id="top-stories-list">
-          <div class="top-story-empty">Loading…</div>
-        </div>
-      </div>
-
-      <!-- Combined Palisades card (shown only when date=20250109) -->
-      <div id="palisades-combined-card" style="display:none;">
-        <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;margin-top:8px;">
-          <!-- Section label -->
-          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:10px;">MOST AFFECTED · JANUARY 9, 2025</div>
-          <!-- LA County row (clickable) -->
-          <div id="palisades-county-row" style="display:flex;align-items:center;gap:12px;padding:8px 10px;cursor:pointer;border:1px solid transparent;border-left-color:transparent;transition:border-color 0.2s,background 0.2s;" onmouseenter="this.style.borderLeftColor='#f97316';this.style.background='rgba(249,115,22,0.05)'" onmouseleave="this.style.borderLeftColor='transparent';this.style.background='transparent'">
-            <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div>
-            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:0.95rem;font-weight:400;color:var(--text);flex:1;line-height:1.3;">Los Angeles County</div>
-            <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.06em;color:#f97316;flex-shrink:0;">44.8 µg/m³</div>
+        <!-- Normal top-3 section (hidden when date=20250109) -->
+        <div id="top-stories-section" class="welcome-section">
+          <div class="welcome-section-label" id="top-stories-label">Most Affected Today</div>
+          <div id="top-stories-list">
+            <div class="top-story-empty">Loading…</div>
           </div>
-          <!-- Financial number -->
-          <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:400;color:#f97316;letter-spacing:-0.02em;line-height:1.1;margin-top:10px;text-align:center;">$36B – $40B</div>
-          <!-- Financial label -->
-          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:300;color:rgba(255,255,255,0.45);margin-top:4px;text-align:center;">estimated structures destroyed · property only</div>
-          <!-- Full-width CTA -->
-          <button onclick="window.open('/impact','_blank')" style="width:100%;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:#f97316;background:transparent;border:1px solid rgba(249,115,22,0.5);padding:8px 10px;border-radius:3px;cursor:pointer;margin-top:12px;margin-bottom:28px;transition:background 0.2s;" onmouseenter="this.style.background='rgba(249,115,22,0.1)'" onmouseleave="this.style.background='transparent'">VIEW FINANCIAL ANALYSIS →</button>
         </div>
+
+        <!-- Combined Palisades card (shown only when date=20250109) -->
+        <div id="palisades-combined-card" style="display:none;">
+          <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;margin-top:8px;">
+            <!-- Section label -->
+            <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:10px;">MOST AFFECTED · JANUARY 9, 2025</div>
+            <!-- LA County row (clickable) -->
+            <div id="palisades-county-row" style="display:flex;align-items:center;gap:12px;padding:8px 10px;cursor:pointer;border:1px solid transparent;border-left-color:transparent;transition:border-color 0.2s,background 0.2s;" onmouseenter="this.style.borderLeftColor='#f97316';this.style.background='rgba(249,115,22,0.05)'" onmouseleave="this.style.borderLeftColor='transparent';this.style.background='transparent'">
+              <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div>
+              <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:0.95rem;font-weight:400;color:var(--text);flex:1;line-height:1.3;">Los Angeles County</div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.06em;color:#f97316;flex-shrink:0;">44.8 µg/m³</div>
+            </div>
+            <!-- Financial number -->
+            <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:400;color:#f97316;letter-spacing:-0.02em;line-height:1.1;margin-top:10px;text-align:center;">$36B – $40B</div>
+            <!-- Financial label -->
+            <div style="font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:300;color:rgba(255,255,255,0.45);margin-top:4px;text-align:center;">estimated structures destroyed · property only</div>
+          </div>
+        </div>
+
+        <!-- Legacy banners (kept in DOM, permanently hidden — replaced by combined card) -->
+        <div id="historic-banner" style="display:none;"></div>
+        <div id="impact-entry-banner" style="display:none;"></div>
+
       </div>
+    </div>
 
-      <!-- Legacy banners (kept in DOM, permanently hidden — replaced by combined card) -->
-      <div id="historic-banner" style="display:none;"></div>
-      <div id="impact-entry-banner" style="display:none;"></div>
-
+    <!-- Pinned CTA — always visible at the bottom -->
+    <div id="welcome-cta">
+      <button onclick="window.open('/impact','_blank')" style="width:100%;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:#f97316;background:transparent;border:1px solid rgba(249,115,22,0.5);padding:10px;border-radius:3px;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='rgba(249,115,22,0.1)'" onmouseleave="this.style.background='transparent'">VIEW FINANCIAL ANALYSIS →</button>
     </div>
   </div>
 
