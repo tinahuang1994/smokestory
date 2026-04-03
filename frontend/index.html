@@ -1254,7 +1254,7 @@
     <div style="display:flex;align-items:center;gap:8px;">
       <button id="today-btn" class="today-btn" onclick="jumpToToday()">
         <span class="today-btn-dot"></span>
-        <span id="today-btn-text">JUMP TO TODAY →</span>
+        <span id="today-btn-text">LATEST DATA →</span>
       </button>
       <div class="date-picker-inner">
         <span class="date-picker-icon">📅</span>
@@ -1265,7 +1265,7 @@
       <span style="display:inline-flex;align-items:center;gap:4px;color:rgba(249,115,22,0.75);font-style:normal;letter-spacing:0.1em;font-size:0.55rem;">
         <span style="width:5px;height:5px;border-radius:50%;background:#f97316;flex-shrink:0;animation:live-pulse 2s ease-in-out infinite;"></span>LIVE
       </span>
-      Any date since 2005 · today's data available
+      Any date since 2005 · updated daily
     </span>
   </div>
 </div>
@@ -1305,7 +1305,7 @@
 
       <div class="welcome-section">
         <div class="welcome-section-label">What is this</div>
-        <div class="welcome-about">SmokeStory translates raw satellite and sensor data into stories for communities affected by California's wildfires. Data updates daily — you can explore near-real-time air quality including today.</div>
+        <div class="welcome-about">SmokeStory translates raw satellite and sensor data into stories for communities affected by California's wildfires. Data updates daily — explore near-real-time air quality back to 2005.</div>
       </div>
 
       <div class="welcome-section">
@@ -1313,7 +1313,7 @@
         <div class="welcome-steps">
           <div class="welcome-step">
             <div class="step-num">01</div>
-            <div class="step-text">Pick any date — including today — to explore near-real-time satellite data, or choose a historic fire event from the header</div>
+            <div class="step-text">Pick any date — back to 2005 — to explore near-real-time satellite data, or choose a historic fire event from the header</div>
           </div>
           <div class="welcome-step">
             <div class="step-num">02</div>
@@ -2169,7 +2169,7 @@
     let foundDate = null;
     let fetchError = false;
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 30; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const ds = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
@@ -2188,7 +2188,7 @@
     // Reset loading state
     btn.classList.remove('loading');
     btn.style.pointerEvents = '';
-    textEl.textContent = 'JUMP TO TODAY →';
+    textEl.textContent = 'LATEST DATA →';
     if (dot) dot.style.display = '';
 
     if (fetchError) {
@@ -2197,14 +2197,7 @@
     }
 
     if (!foundDate) {
-      // Last-resort fallback: use 10 days ago
-      const fallback = new Date();
-      fallback.setDate(fallback.getDate() - 10);
-      foundDate = `${fallback.getFullYear()}${String(fallback.getMonth()+1).padStart(2,'0')}${String(fallback.getDate()).padStart(2,'0')}`;
-      datePicker.setDate(foundDate, false);
-      loadMap(foundDate);
-      updateTodayBtn();
-      showToast('Recent data unavailable · Showing most recent available date');
+      showToast('No recent data available · Try a specific date');
       return;
     }
 
@@ -2219,7 +2212,7 @@
                       'July','August','September','October','November','December'];
       const m = parseInt(foundDate.slice(4,6), 10) - 1;
       const day = parseInt(foundDate.slice(6,8), 10);
-      showToast(`Today's data not yet available · Showing ${MONTHS[m]} ${day}`);
+      showToast(`Showing most recent data · ${MONTHS[m]} ${day}`);
     }
   }
 
