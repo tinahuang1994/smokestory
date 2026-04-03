@@ -1285,6 +1285,11 @@
 <!-- ONBOARDING TOOLTIP -->
 <div id="onboarding-tip">&#128070; Click any county to read its smoke story</div>
 
+<!-- NO-FIRE BANNER -->
+<div id="no-fire-banner" style="display:none;position:fixed;top:calc(var(--header) + 14px);left:50%;transform:translateX(-50%);z-index:1200;background:#1a1a2e;border:1px solid #3b3b5c;color:#c4c4d4;font-family:var(--mono);font-size:0.68rem;letter-spacing:0.12em;padding:10px 20px;border-radius:4px;text-align:center;max-width:520px;width:90%;">
+  NO ACTIVE FIRES OR SMOKE DETECTED IN CALIFORNIA TODAY &nbsp;·&nbsp; EXPLORE A PAST EVENT USING THE HISTORIC EVENTS MENU OR DATE PICKER
+</div>
+
 <!-- LOADING INDICATOR -->
 <div id="map-loading" class="hidden">
   <div class="spinner"></div>
@@ -1313,15 +1318,15 @@
         <div class="welcome-steps">
           <div class="welcome-step">
             <div class="step-num">01</div>
-            <div class="step-text">Start with a historic fire event from the header, or pick any date back to 2005 to explore past air quality. Hit "Latest Data" to see today's active fires and smoke — county air quality won't be available yet due to EPA's 4–8 week data lag</div>
+            <div class="step-text">You're looking at January 9, 2025 — the peak of the LA fires. Click LA County on the map, then hit Generate Story to read what happened</div>
           </div>
           <div class="welcome-step">
             <div class="step-num">02</div>
-            <div class="step-text">Click any county on the map to view its air quality data (available for past dates; recent dates won't have PM2.5 yet)</div>
+            <div class="step-text">Explore other historic smoke events using the Historic Events menu in the header, or pick any date back to 2005 with the date picker</div>
           </div>
           <div class="welcome-step">
             <div class="step-num">03</div>
-            <div class="step-text">Click Generate Story to get an AI-powered plain-English narrative for that county</div>
+            <div class="step-text">Hit "Latest Data" to see today's active fire hotspots and smoke — county air quality won't be available yet due to EPA's 4–8 week data lag</div>
           </div>
         </div>
       </div>
@@ -1511,7 +1516,11 @@
     altInput: true,
     altFormat: 'F j, Y',
     disableMobile: true,
-    onChange: () => { loadMap(); updateTodayBtn(); },
+    onChange: () => {
+      const banner = document.getElementById('no-fire-banner');
+      if (banner) banner.style.display = 'none';
+      loadMap(); updateTodayBtn();
+    },
   });
 
   // ── Map setup ─────────────────────────────────────────────
@@ -2174,10 +2183,21 @@
     if (dot) dot.style.display = '';
 
     datePicker.setDate(today, false);
-    loadMap(today);
+    await loadMap(today);
     updateTodayBtn();
 
-    showToast("Showing today's fires & smoke · EPA air quality data lags 4–8 weeks");
+    // Check if fires and smoke are both empty — if so, show persistent banner
+    try {
+      const [fireRes, smokeRes] = await Promise.all([
+        fetch(`${API}/map/fires/${today}`),
+        fetch(`${API}/map/smoke/${today}`),
+      ]);
+      const [fireGj, smokeGj] = await Promise.all([fireRes.json(), smokeRes.json()]);
+      const noFires = !fireGj.features || fireGj.features.length === 0;
+      const noSmoke = !smokeGj.features || smokeGj.features.length === 0;
+      const banner = document.getElementById('no-fire-banner');
+      if (banner) banner.style.display = (noFires && noSmoke) ? 'block' : 'none';
+    } catch(e) { /* silent fail */ }
   }
 
   // ── Init ──────────────────────────────────────────────────
