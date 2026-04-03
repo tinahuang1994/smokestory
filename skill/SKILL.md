@@ -23,9 +23,17 @@ You want to adapt the financial impact methodology or narrative engine for your 
 
 ---
 
-## WHAT YOU CAN BUILD WITH THIS SKILL
+## WHAT THIS SKILL IS — AND IS NOT
 
-SmokeStory implements a three-layer architecture that can be adapted for other climate disasters with geospatial data.
+This skill is a playbook, not a generator. It documents exactly how SmokeStory was designed, built, and deployed — so you can use it as a reference architecture and learn from the decisions made along the way.
+
+WHAT YOU WILL GET:
+A complete, battle-tested pattern for building a wildfire smoke intelligence tool in California — including architecture principles, working code templates, deployment lessons, and science communication rules learned through real external review.
+
+WHAT YOU WILL NOT GET:
+A turn-key solution for other hazard types. This skill does not provide data sources, severity thresholds, or health economics methodology for hurricanes, floods, heat waves, or any other domain. If you want to build for a different hazard, the architecture is portable — but you will need to do your own domain research. Part 7 of this document gives you a framework for that research.
+
+SmokeStory implements a three-layer architecture:
 
 Layer 1 — DATA PIPELINE
 Fetch raw satellite and sensor data from government APIs, spatially join it to administrative boundaries, and clean it for display and narrative generation.
@@ -36,15 +44,7 @@ Convert structured location-level data into calibrated plain-English AI narrativ
 Layer 3 — FINANCIAL IMPACT MODULE
 Estimate three independent economic impacts using actuarial, real estate economics, and environmental health economics frameworks.
 
-POSSIBLE ADAPTATIONS:
-The three-layer architecture can in principle be adapted for other climate hazards where:
-- Geospatial hazard data exists (satellite, sensor, or model output)
-- Administrative boundary data is available (county, zip code, census tract)
-- A severity classification system exists (EPA AQI, NWS warning levels, USGS flood stages)
-
-Examples of hazard types where this pattern may apply include floods, drought, heat waves, hurricanes, and air quality events beyond wildfire.
-
-NOTE: SmokeStory has only been built and validated for wildfire smoke in California. Adapting it for other hazards will require identifying appropriate data sources, validating severity thresholds, and testing the narrative output for that specific domain. The patterns here are starting points, not verified implementations for other hazards.
+This architecture can in principle work for any hazard where geospatial data exists, administrative boundaries are available, and a recognized severity classification system exists. But the specific implementation here has only been built and validated for wildfire smoke in California.
 
 ---
 
@@ -605,6 +605,99 @@ Health impact functions: EPA BenMAP
 COI unit values: EPA BenMAP configuration files
   Available at epa.gov/benmap
   Updated periodically — always use current version
+
+---
+
+## PART 7: HOW TO ADAPT THIS FOR A NEW HAZARD TYPE
+
+This section does not give you sources or methodology for any specific hazard. What it gives you is the five questions you must answer before you can start building — and what each answer should look like.
+
+If you cannot answer all five, you are not ready to build yet. Spend time on the research first.
+
+---
+
+### Question 1: What is your primary data source, and what shape is it?
+
+SmokeStory's hazard data comes in two forms: point observations (fire detections from NASA FIRMS, PM2.5 readings from EPA AQS monitors) and density polygons (NOAA HMS smoke plumes). The spatial join pattern in Part 1.2 is written for point data. If your hazard data is primarily polygons — track cones, flood inundation zones, wind radii — you will need a polygon-to-polygon join, not a point-to-polygon join.
+
+Answer these before writing any pipeline code:
+- Is your primary data source points, polygons, or rasters?
+- What government or institutional body produces it?
+- Does it require authentication? What kind?
+- What is the URL format and file format (GeoJSON, Shapefile, CSV)?
+- What is the data latency — real-time, daily, or lagged by months?
+- What is the earliest available historical date?
+
+The date validation code in Part 1.1 Principle 5 uses the HMS smoke data start date (August 2005) as the lower bound. You must replace this with the correct lower bound for your data source. Do not copy it without changing it.
+
+---
+
+### Question 2: What is your severity classification system?
+
+SmokeStory uses the EPA AQI scale for PM2.5 (revised February 2024). This is a regulatory standard with six named levels and specific µg/m³ thresholds. Part 2.2 gives the exact function.
+
+For your hazard, you need an equivalent:
+- Is there a recognized official severity scale for this hazard (e.g., Saffir-Simpson for hurricanes, NWS warning levels, USGS flood stages)?
+- What are the exact threshold values and units?
+- Who publishes and maintains it? Has it been revised recently?
+- Is the same scale used by the frontend UI and the backend narrative generator? (It must be — see Part 2.1 Principle 1.)
+
+The severity label function in Part 2.2 and the severity-tone mapping in Part 2.4 are both PM2.5-specific. You will rewrite both from scratch using your hazard's official thresholds. The pattern (calculate severity in Python, pass the label explicitly to Claude, never let the AI reclassify) is what transfers — not the thresholds themselves.
+
+---
+
+### Question 3: What does your spatial join need to handle?
+
+The pattern in Part 1.2 joins point observations to county polygons and aggregates by mean. For some hazards this is wrong:
+
+- If your hazard data is a polygon (e.g., a storm track cone) intersecting many counties, mean is meaningless. You may want max intensity, area of intersection, or a boolean "is this county inside the polygon."
+- If your hazard data is a raster (e.g., rainfall accumulation), you need zonal statistics, not a point join. Use the rasterstats Python library (zonal_stats function) — the geopandas sjoin pattern in Part 1.2 does not apply.
+- If your data represents a single storm rather than distributed observations, aggregation by county may not apply at all.
+
+Decide what spatial aggregation makes scientific sense for your hazard before writing the join. Then check that your narrative endpoint uses the identical aggregation method. This is Part 1.1 Principle 4, and it applies regardless of hazard type.
+
+---
+
+### Question 4: What are the health and economic impact methodologies for your hazard?
+
+SmokeStory's health impact estimate uses EPA BenMAP Cost of Illness methodology, which is specific to PM2.5 inhalation. The three-estimate framework in Part 3.1 is a general pattern — separate direct destruction, area property impact, and health costs — but the specific methods are wildfire-specific.
+
+For your hazard:
+- What is the appropriate health impact methodology? (BenMAP applies to air pollutants. Flood and hurricane health economics use different actuarial and epidemiological frameworks.)
+- What peer-reviewed literature covers property value impacts for this specific hazard type and region? Do not assume wildfire depreciation rates apply to other hazards.
+- What is the equivalent of "official damage count" — is there a government inspection program, a FEMA damage assessment, or another authoritative source?
+- What is the appropriate Cost of Illness unit — is it hospitalizations, ER visits, evacuation costs, or something else?
+
+If you cannot find peer-reviewed sources for your impact methodology, present the estimates with wider uncertainty ranges and more prominent limitations. Do not fabricate methodological authority.
+
+---
+
+### Question 5: What are the known data quality failure modes for your hazard?
+
+SmokeStory discovered two significant data quality issues in production: EPA monitors go offline during evacuations (producing anomalously low readings in the worst-affected areas), and HMS satellite smoke does not always correspond to ground-level air quality. Part 1.4 documents these and the detection logic used.
+
+Every data source has analogous failure modes. Before publishing, research and document:
+- Under what conditions does your primary data source fail or produce misleading values?
+- Is there a cross-reference source you can use to flag suspect readings?
+- What should the UI show when data quality is suspect?
+
+Build this detection logic before launch, not after. Data quality failures discovered in production — especially for a product that informs health decisions — are much more damaging than finding them in testing.
+
+---
+
+### Checklist before you start building
+
+[ ] I have identified my primary data source, its format, and its URL
+[ ] I know whether my hazard data is points, polygons, or rasters
+[ ] I have identified the official severity classification system for my hazard
+[ ] I have written my severity label function with correct official thresholds
+[ ] I have decided what spatial aggregation method makes sense and documented it
+[ ] I have identified peer-reviewed sources for my property impact estimate
+[ ] I have identified the correct health economics methodology for my hazard type
+[ ] I have researched the known data quality failure modes for my data source
+[ ] I have set the correct date lower bound for my data source in the validation function
+[ ] I have confirmed my hazard data and boundary file share the same CRS (or reprojected before joining)
+[ ] I have replaced all California-specific references in the narrative prompt template (see Part 2.3)
 
 ---
 
