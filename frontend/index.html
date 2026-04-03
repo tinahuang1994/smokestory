@@ -1305,7 +1305,7 @@
 
       <div class="welcome-section">
         <div class="welcome-section-label">What is this</div>
-        <div class="welcome-about">SmokeStory translates raw satellite and sensor data into stories for communities affected by California's wildfires. Data updates daily — explore near-real-time air quality back to 2005.</div>
+        <div class="welcome-about">SmokeStory translates satellite and sensor data into stories for communities affected by California's wildfires. Fire detections and smoke plumes update daily from NASA and NOAA. EPA ground monitor data — which powers the county air quality layer — typically lags 4–8 weeks.</div>
       </div>
 
       <div class="welcome-section">
@@ -1313,7 +1313,7 @@
         <div class="welcome-steps">
           <div class="welcome-step">
             <div class="step-num">01</div>
-            <div class="step-text">Pick any date — back to 2005 — to explore near-real-time satellite data, or choose a historic fire event from the header</div>
+            <div class="step-text">Start with a historic fire event from the header, or pick any date back to 2005 to explore past air quality. Hit "Latest Data" to jump to today's active fires and smoke</div>
           </div>
           <div class="welcome-step">
             <div class="step-num">02</div>
@@ -2166,24 +2166,6 @@
     if (dot) dot.style.display = 'none';
 
     const today = todayStr();
-    let foundDate = null;
-    let fetchError = false;
-
-    for (let i = 0; i < 30; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const ds = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-      try {
-        const res = await fetch(`${API}/map/pm25/06/${ds}`);
-        if (!res.ok) continue;
-        const geojson = await res.json();
-        const hasData = geojson.features && geojson.features.some(f => f.properties.pm25_mean != null);
-        if (hasData) { foundDate = ds; break; }
-      } catch(e) {
-        fetchError = true;
-        break;
-      }
-    }
 
     // Reset loading state
     btn.classList.remove('loading');
@@ -2191,29 +2173,11 @@
     textEl.textContent = 'LATEST DATA →';
     if (dot) dot.style.display = '';
 
-    if (fetchError) {
-      showToast('Could not connect · Please try again');
-      return;
-    }
-
-    if (!foundDate) {
-      showToast('No recent data available · Try a specific date');
-      return;
-    }
-
-    datePicker.setDate(foundDate, false);
-    loadMap(foundDate);
+    datePicker.setDate(today, false);
+    loadMap(today);
     updateTodayBtn();
 
-    if (foundDate === today) {
-      showToast("Showing today's data");
-    } else {
-      const MONTHS = ['January','February','March','April','May','June',
-                      'July','August','September','October','November','December'];
-      const m = parseInt(foundDate.slice(4,6), 10) - 1;
-      const day = parseInt(foundDate.slice(6,8), 10);
-      showToast(`Showing most recent data · ${MONTHS[m]} ${day}`);
-    }
+    showToast("Showing today's fires & smoke · EPA air quality data lags 4–8 weeks");
   }
 
   // ── Init ──────────────────────────────────────────────────
