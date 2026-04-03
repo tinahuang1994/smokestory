@@ -576,15 +576,16 @@
       flex-direction: column;
     }
     #welcome-scroll {
-      flex: 1;
       overflow-y: auto;
+      flex-shrink: 1;
+      min-height: 0;
     }
     #welcome-scroll::-webkit-scrollbar { width: 2px; }
     #welcome-scroll::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.3); }
     #welcome-cta {
       flex-shrink: 0;
-      padding: 0 28px 20px;
-      background: linear-gradient(180deg, rgba(8,8,15,0) 0%, #08080f 30%);
+      margin-top: auto;
+      padding: 16px 28px 20px;
     }
     #county-view {
       opacity: 0;
