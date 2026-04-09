@@ -59,6 +59,7 @@ def generate_narrative(county_data, date=None):
     else:
         smoke_info = "No smoke is currently detected in this area."
 
+    human_scale = None
     if pm25_mean is not None:
         human_scale = humanize_pm25(pm25_mean)
         if human_scale:
@@ -96,22 +97,33 @@ def generate_narrative(county_data, date=None):
                 line += f" ({h['source']})"
                 lines.append(line)
             news_section = (
-                "Guardian news context for this date (use specific facts from these "
-                "articles to ground the narrative — do not invent details not present here):\n"
+                "Guardian news context for this date — California wildfire/smoke articles only. "
+                "Use specific facts from these articles to ground the narrative. "
+                "Do NOT use any article that describes events outside California "
+                "(other US states, other countries). If an article's events are in another state "
+                "or country, skip it entirely.\n"
                 + "\n".join(lines)
             )
 
     # ── Sentence-level instructions ────────────────────────────
-    if pm25_mean is None:
+    # Good air quality: no health guidance warranted — keep tone calm and factual
+    if severity == "Good":
+        health_instruction = (
+            "Sentence 3 — Conditions: Air quality is within the Good range. "
+            "No special precautions are needed. State this plainly and positively — "
+            "do not issue precautionary health guidance that isn't warranted by the data."
+        )
+    elif pm25_mean is None:
         health_instruction = (
             "Sentence 3 — Health guidance: No PM2.5 monitor data is available. "
-            "If smoke is present, note that residents should check AirNow.gov rather than "
-            "stating specific health guidance."
+            "If smoke is present, note that people should check AirNow.gov for current "
+            "readings rather than stating specific health thresholds."
         )
     else:
         health_instruction = (
             f"Sentence 3 — Health guidance: Give concrete guidance matched to the "
-            f"{severity} classification. Name who is most at risk. Recommend a specific action."
+            f"{severity} classification. Name who is most at risk. Recommend a specific action. "
+            "Do not write this as a public health advisory."
         )
 
     opening_instruction = (
@@ -119,13 +131,14 @@ def generate_narrative(county_data, date=None):
         f"  (a) A specific place, neighborhood, or landmark within {county_name} County "
         f"drawn from the news context — ONLY if the Guardian article explicitly names a "
         f"location inside {county_name} County. If you are not certain the location is "
-        f"within {county_name} County, do NOT use it here — use mode (b), (c), or (d) instead.\n"
-        f"  (b) A concrete environmental or human condition directly caused by this event "
-        f"— do NOT use '[smoke descriptor] [verb] [county]' forms such as "
+        f"within {county_name} County, do NOT use mode (a) — use (b), (c), or (d) instead.\n"
+        f"  (b) A concrete environmental or human condition directly caused by this event. "
+        f"Do NOT use '[smoke descriptor] [verb] [county]' forms such as "
         f"'Heavy smoke blankets {county_name}', 'Smoke chokes {county_name}', "
-        f"'Smoke hangs over {county_name}', or any variant. These restate the input and are banned.\n"
-        f"  (c) A human action or impact drawn directly from the news (e.g. evacuations, closures, deaths)\n"
-        f"  (d) A contrast — what's normal for this time of year vs. what's happening now\n"
+        f"'Smoke hangs over {county_name}', or any similar construction. These restate the input.\n"
+        f"  (c) A human action or impact drawn directly from California news "
+        f"(e.g. evacuations, closures, deaths) — California events only.\n"
+        f"  (d) A contrast — what's normal for this time of year vs. what's happening now.\n"
         f"Do NOT open with a generalization. Do NOT open with 'On [date]' or '{county_name} County'."
     )
 
@@ -171,34 +184,47 @@ def generate_narrative(county_data, date=None):
         "PM2.5 classification provided."
     )
 
+    # Build the data sentence instruction, pinning the pre-computed ratio string
+    if human_scale:
+        data_instruction = (
+            f"Sentence 2 — Data: Connect the event to the PM2.5 reading. "
+            f"For the ratio, use this exact phrase verbatim: \"{human_scale}\" — "
+            f"do not calculate your own ratio or substitute different wording."
+        )
+    elif pm25_mean is not None:
+        data_instruction = (
+            f"Sentence 2 — Data: State that PM2.5 is {pm25_mean:.1f} µg/m³, "
+            f"classified as {severity}, and note it is within or below the safe daily threshold."
+        )
+    else:
+        data_instruction = (
+            "Sentence 2 — Data: Note that no ground-level PM2.5 monitor data is available "
+            "for this county on this date."
+        )
+
     sections.append(
         "Write a 4-sentence narrative structured as follows:\n\n"
         f"{opening_instruction}\n\n"
-        f"Sentence 2 — Data: Connect the event to the PM2.5 reading. "
-        f"Express the number in human terms (e.g., 'X times the safe daily limit') "
-        f"not just the EPA label. If the number is below the safe threshold, say so plainly.\n\n"
+        f"{data_instruction}\n\n"
         f"{health_instruction}\n\n"
         "Sentence 4 — Context: One sentence of broader context about wildfire, smoke, "
         "air quality, or climate as it relates to this county or California. "
-        "Do NOT reference unrelated news events (crime, politics, sports, etc.).\n\n"
+        "Do NOT reference unrelated news events (crime, politics, sports, etc.) "
+        "and do NOT reference events in other states or countries.\n\n"
         f"Geographic rule (STRICT): {county_name} County is the subject of this narrative. "
         f"You may ONLY name a specific city, landmark, or neighborhood in sentence 1 if "
         f"that place is physically inside {county_name} County, California. "
-        f"Before using any location name from Guardian context as a sentence 1 anchor, "
-        f"ask yourself: 'Is this place inside {county_name} County?' "
         f"If you are not certain, do not use it in sentence 1. "
-        f"Out-of-county locations (other counties, national parks in adjacent counties, "
-        f"cities in neighboring counties) may only appear in sentences 2 or 4 as "
-        f"broader California context — never as the opening anchor.\n\n"
-        "Writing rules:\n"
-        "  - Health guidance must name a specific population at risk and a specific action "
-        "to take. Do not write it as a public health advisory ('residents are urged', "
-        "'officials warn', 'health authorities recommend', 'it is important to'). "
-        "Write it as a direct, concrete statement.\n"
-        "  - Do not open with '[density] smoke blankets [county]' — this restates the "
-        "input data, not a scene. Choose a real opening mode from the list above.\n\n"
-        "Output all four sentences as a single paragraph with no line breaks between sentences. "
-        "Write flowing prose. No bullet points. Each sentence should be distinct and load-bearing."
+        f"Out-of-county or out-of-state locations may only appear in sentences 2 or 4 "
+        f"as broader context — never as the opening anchor.\n\n"
+        "Writing rules (apply to ALL sentences, not just sentence 1):\n"
+        "  - In no sentence use '[smoke/density descriptor] [verb] [county]' constructions "
+        "(blankets, chokes, hangs over, settles over, covers, etc.) — these restate input data.\n"
+        "  - Health guidance must name a specific population at risk and a specific action. "
+        "Do not write advisory-voice ('residents are urged', 'officials warn', "
+        "'health authorities recommend', 'it is important to', 'people should be aware').\n\n"
+        "Output all four sentences as a single unbroken paragraph. "
+        "No line breaks between sentences. Flowing prose only."
     )
 
     prompt = "\n\n".join(sections)

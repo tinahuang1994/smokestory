@@ -9,9 +9,12 @@ GUARDIAN_API_KEY = os.getenv("GUARDIAN_API_KEY", "test")
 
 
 RELEVANT_KEYWORDS = {
-    "fire", "fires", "wildfire", "wildfires", "smoke", "blaze", "blazes",
+    # Unambiguous wildfire/smoke terms only — "fire", "fires", "burn", "burning"
+    # are excluded because they match common English idioms
+    # ("under fire", "fire and rehire", "burning question") producing junk articles
+    "wildfire", "wildfires", "smoke", "blaze", "blazes",
     "evacuation", "evacuate", "air quality", "pm2.5", "particulate",
-    "burn", "burning", "inferno", "firefighter",
+    "inferno", "firefighter", "firefighters",
 }
 
 
@@ -69,12 +72,15 @@ def get_news_headlines(county_name, date):
         )
         filtered = _filter_relevant(results)
 
-        # Fallback: if county query returns nothing, try broader CA wildfire query.
-        # This catches major named fires (e.g. Camp Fire, Carr Fire) where Guardian
-        # headlined the fire name rather than the county name.
+        # Fallback: if county query returns nothing, try broader CA wildfire query
+        # with a wider ±3 day window. Major named fires (e.g. Camp Fire, Carr Fire)
+        # are often headlined without the county name, and Guardian coverage can
+        # appear 2–3 days after ignition.
         if not filtered:
+            fallback_from = (event_date - timedelta(days=3)).strftime("%Y-%m-%d")
+            fallback_to = (event_date + timedelta(days=3)).strftime("%Y-%m-%d")
             results = _query_guardian(
-                "California wildfire smoke fire", from_date, to_date, page_size=8
+                "California wildfire smoke", fallback_from, fallback_to, page_size=8
             )
             filtered = _filter_relevant(results)
 
