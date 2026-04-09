@@ -1410,7 +1410,7 @@
     <span class="layer-dot" style="background:#f97316;opacity:0.85;"></span>
     <label for="chk-pm25">PM2.5 Counties</label>
     <button class="info-btn" onclick="showInfo('info-pm25',event)" title="About this layer">ⓘ</button>
-    <div class="info-tooltip" id="info-pm25">PM2.5 is fine particle pollution from smoke, dust and vehicle emissions. Higher levels harm your lungs.<br/><br/>Shows daily mean across all EPA monitors in the county. EPA updated its standard in February 2024.<br/><br/>🟢 Good (0–9): Safe for everyone<br/>🟡 Moderate (9–35): Sensitive people may notice effects<br/>🟠 Sensitive Groups (35–55): Children, elderly, heart/lung patients should limit outdoor time<br/>🔴 Unhealthy (55–150): Everyone may be affected<br/>🟣 Very Unhealthy (150–250): Avoid outdoor activity<br/>⚫ Hazardous (250+): Stay indoors<br/><br/>Source: EPA AQS. Updated daily.</div>
+    <div class="info-tooltip" id="info-pm25">PM2.5 is fine particle pollution from smoke, dust and vehicle emissions. Higher levels harm your lungs.<br/><br/>Shows daily mean across all EPA monitors in the county. Breakpoints reflect the 2024 EPA revision.<br/><br/>🟢 Good (0–9): Safe for everyone<br/>🟡 Moderate (9–35): Sensitive people may notice effects<br/>🟠 Sensitive Groups (35–55): Children, elderly, heart/lung patients should limit outdoor time<br/>🔴 Unhealthy (55–125): Everyone may be affected<br/>🟣 Very Unhealthy (125–225): Avoid outdoor activity<br/>⚫ Hazardous (225+): Stay indoors<br/><br/>Source: EPA AQS. Data lags 4–8 weeks.</div>
   </div>
   <div class="layer-row">
     <input type="checkbox" id="chk-smoke" checked onchange="toggleLayer('smoke')" />
@@ -1434,9 +1434,9 @@
   <div class="legend-row"><span class="legend-swatch" style="background:#22c55e;"></span>Good (0–9)</div>
   <div class="legend-row"><span class="legend-swatch" style="background:#eab308;"></span>Moderate (9–35)</div>
   <div class="legend-row"><span class="legend-swatch" style="background:#f97316;"></span>Unhealthy for Sensitive Groups (35–55)</div>
-  <div class="legend-row"><span class="legend-swatch" style="background:#ef4444;"></span>Unhealthy (55–150)</div>
-  <div class="legend-row"><span class="legend-swatch" style="background:#a855f7;"></span>Very Unhealthy (150–250)</div>
-  <div class="legend-row"><span class="legend-swatch" style="background:#7e22ce;"></span>Hazardous (250+)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#ef4444;"></span>Unhealthy (55–125)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#a855f7;"></span>Very Unhealthy (125–225)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#7e22ce;"></span>Hazardous (225+)</div>
   <div class="legend-row"><span class="legend-swatch" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);"></span>No data</div>
 </div>
 
@@ -1598,8 +1598,8 @@
     if (val <= 9.0)     return '#22c55e';
     if (val <= 35.4)    return '#eab308';
     if (val <= 55.4)    return '#f97316';
-    if (val <= 150.4)   return '#ef4444';
-    if (val <= 250.4)   return '#a855f7';
+    if (val <= 125.4)   return '#ef4444';
+    if (val <= 225.4)   return '#a855f7';
     return '#7e22ce';
   }
 
@@ -1608,8 +1608,8 @@
     if (val <= 9.0)     return 'badge-good';
     if (val <= 35.4)    return 'badge-moderate';
     if (val <= 55.4)    return 'badge-usg';
-    if (val <= 150.4)   return 'badge-unhealthy';
-    if (val <= 250.4)   return 'badge-very-unhealthy';
+    if (val <= 125.4)   return 'badge-unhealthy';
+    if (val <= 225.4)   return 'badge-very-unhealthy';
     return 'badge-hazardous';
   }
 
@@ -1618,8 +1618,8 @@
     if (val <= 9.0)     return 'Good';
     if (val <= 35.4)    return 'Moderate';
     if (val <= 55.4)    return 'Sensitive Groups';
-    if (val <= 150.4)   return 'Unhealthy';
-    if (val <= 250.4)   return 'Very Unhealthy';
+    if (val <= 125.4)   return 'Unhealthy';
+    if (val <= 225.4)   return 'Very Unhealthy';
     return 'Hazardous';
   }
 

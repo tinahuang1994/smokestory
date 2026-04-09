@@ -9,7 +9,7 @@ load_dotenv()
 
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-SAFE_DAILY_LIMIT = 35.4  # EPA 24-hour standard (µg/m³)
+SAFE_DAILY_LIMIT = 9.0  # EPA annual NAAQS (2024 revision) — matches legend "Good" threshold
 
 
 def get_severity_label(pm25):
@@ -32,18 +32,19 @@ def get_severity_label(pm25):
 
 
 def humanize_pm25(pm25):
-    """Express PM2.5 relative to the EPA safe daily limit."""
+    """Express PM2.5 as a multiple of the EPA annual NAAQS (9 µg/m³, 2024 revision).
+    This matches the 'Good' threshold shown in the legend."""
     if pm25 is None or pm25 <= SAFE_DAILY_LIMIT:
         return None
     ratio = pm25 / SAFE_DAILY_LIMIT
     if ratio < 1.5:
-        return "just above the EPA safe daily limit"
+        return "just above the EPA annual standard"
     elif ratio < 2.0:
-        return f"about {ratio:.1f}x the EPA safe daily limit"
+        return f"about {ratio:.1f}x the EPA annual standard"
     elif ratio < 3.0:
-        return f"nearly {round(ratio)}x the EPA safe daily limit"
+        return f"nearly {round(ratio)}x the EPA annual standard"
     else:
-        return f"more than {int(ratio)}x the EPA safe daily limit"
+        return f"more than {int(ratio)}x the EPA annual standard"
 
 
 def generate_narrative(county_data, date=None):
