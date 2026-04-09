@@ -13,8 +13,11 @@ SAFE_DAILY_LIMIT = 9.0  # EPA annual NAAQS (2024 revision) — matches legend "G
 
 
 def get_severity_label(pm25):
-    # AQI breakpoints per 2024 EPA revision (effective May 2024)
-    # Annual NAAQS lowered to 9 µg/m³; 24-hr standard unchanged at 35 µg/m³
+    # AQI breakpoints per 2024 EPA revision (effective May 6, 2024)
+    # Source: https://www.epa.gov/system/files/documents/2024-02/pm-naaqs-air-quality-index-fact-sheet.pdf
+    # Last verified: April 2026
+    # If EPA announces a new PM NAAQS rulemaking, update breakpoints here AND in:
+    #   frontend/index.html — pm25Color(), pm25BadgeClass(), pm25Label(), legend rows, info tooltip
     if pm25 is None:
         return None
     if pm25 <= 9.0:

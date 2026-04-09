@@ -26,6 +26,24 @@
 3. Most Affected (county row only)
 4. Financial Impact (label + figure + description + button)
 
+## AQI Standard Reference
+
+- **Breakpoints in use:** 2024 EPA revision, effective May 6, 2024
+- **Source:** https://www.epa.gov/system/files/documents/2024-02/pm-naaqs-air-quality-index-fact-sheet.pdf
+- **Last verified:** April 2026
+- **Humanization reference:** 9.0 µg/m³ (Good/Moderate boundary = 2024 annual NAAQS) — used in `narrative/generator.py` `SAFE_DAILY_LIMIT`
+- **Breakpoints (2024):**
+  - Good: 0–9.0 µg/m³
+  - Moderate: 9.1–35.4 µg/m³
+  - Unhealthy for Sensitive Groups: 35.5–55.4 µg/m³
+  - Unhealthy: 55.5–125.4 µg/m³
+  - Very Unhealthy: 125.5–225.4 µg/m³
+  - Hazardous: 225.5+ µg/m³
+- **If EPA updates standards**, change in ALL of these places:
+  1. `narrative/generator.py` — `get_severity_label()` breakpoints and `SAFE_DAILY_LIMIT`
+  2. `frontend/index.html` — `pm25Color()`, `pm25BadgeClass()`, `pm25Label()`, legend rows, `info-pm25` tooltip text
+- **When to check:** EPA reviews NAAQS on roughly a 5-year cycle. Check airnow.gov/aqi/aqi-basics/ if EPA announces a new PM rulemaking.
+
 ## Data Accuracy Rules
 
 ### Data sources and cadence

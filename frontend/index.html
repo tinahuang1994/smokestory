@@ -1593,6 +1593,11 @@
   }
 
   // ── PM2.5 color scale ─────────────────────────────────────
+  // AQI breakpoints: 2024 EPA revision, effective May 6, 2024
+  // Source: https://www.epa.gov/system/files/documents/2024-02/pm-naaqs-air-quality-index-fact-sheet.pdf
+  // Last verified: April 2026
+  // If EPA updates standards, also update: generator.py (get_severity_label, SAFE_DAILY_LIMIT),
+  // legend rows, and the info-pm25 tooltip text in this file.
   function pm25Color(val) {
     if (val == null)    return '#1a1a2e';
     if (val <= 9.0)     return '#22c55e';
