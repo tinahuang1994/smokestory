@@ -145,12 +145,46 @@ async def news(county_name: str, date: str):
 EMPTY_FC = {"type": "FeatureCollection", "features": []}
 
 
+# In-memory response cache for historical map layers. EPA PM2.5, NOAA smoke, and
+# NASA fire data for a date older than ~2 weeks is finalized and never changes,
+# so caching it avoids re-hitting those slow external APIs on every page load
+# (the dominant warm-state cost). Recent dates (last 14 days) still update and
+# are never cached. The cache clears naturally whenever the free-tier instance
+# cold-starts, and on a soft size cap. Only successful results are cached —
+# transient fetch failures are not, so a hiccup isn't frozen in.
+_map_cache = {}
+
+
+def _cacheable(date_str):
+    try:
+        d = datetime.strptime(date_str, "%Y%m%d").date()
+    except ValueError:
+        return False
+    return (date_type.today() - d).days > 14
+
+
+def _cache_get(kind, date_str):
+    return _map_cache.get((kind, date_str)) if _cacheable(date_str) else None
+
+
+def _cache_put(kind, date_str, value):
+    if _cacheable(date_str):
+        if len(_map_cache) > 300:
+            _map_cache.clear()
+        _map_cache[(kind, date_str)] = value
+    return value
+
+
 @app.get("/map/smoke/{date}")
 async def map_smoke(date: str):
+    cached = _cache_get("smoke", date)
+    if cached is not None:
+        return JSONResponse(content=cached)
     gdf = get_smoke_polygons(date)
     if gdf is None or gdf.empty:
-        return JSONResponse(content=EMPTY_FC)
-    return JSONResponse(content=json.loads(gdf.to_json()))
+        return JSONResponse(content=_cache_put("smoke", date, dict(EMPTY_FC)))
+    fc = json.loads(gdf.to_json())
+    return JSONResponse(content=_cache_put("smoke", date, fc))
 
 
 FIRMS_KEY = os.getenv("FIRMS_MAP_KEY")
@@ -159,6 +193,10 @@ BBOX = "-124.4,32.5,-114.1,42.0"
 
 @app.get("/map/fires/{date}")
 async def map_fires(date: str):
+    cached = _cache_get("fires", date)
+    if cached is not None:
+        return JSONResponse(content=cached)
+
     requested = datetime.strptime(date, "%Y%m%d").date()
     days_ago = (date_type.today() - requested).days
 
@@ -174,11 +212,12 @@ async def map_fires(date: str):
             resp.raise_for_status()
             df = pd.read_csv(io.StringIO(resp.text))
         except Exception as e:
+            # Transient fetch failure — do not cache, so a retry can succeed.
             print(f"Error fetching archive fire data: {e}")
             return JSONResponse(content=EMPTY_FC)
 
     if df is None or df.empty:
-        return JSONResponse(content=EMPTY_FC)
+        return JSONResponse(content=_cache_put("fires", date, dict(EMPTY_FC)))
 
     features = []
     for _, row in df.iterrows():
@@ -195,7 +234,8 @@ async def map_fires(date: str):
                 "brightness": row.get("bright_ti4") or row.get("brightness"),
             },
         })
-    return JSONResponse(content={"type": "FeatureCollection", "features": features})
+    fc = {"type": "FeatureCollection", "features": features}
+    return JSONResponse(content=_cache_put("fires", date, fc))
 
 
 CA_COUNTIES_URL = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/california-counties.geojson"
@@ -219,6 +259,12 @@ def _load_ca_counties():
 
 @app.get("/map/pm25/06/{date}")
 async def map_pm25(date: str):
+    # 0. Serve a cached merged response for finalized historical dates (the EPA
+    #    AQS fetch below is the dominant warm-state cost of a page load).
+    cached = _cache_get("pm25", date)
+    if cached is not None:
+        return Response(content=cached, media_type="application/json")
+
     # 1. Load California county boundaries (cached in memory after first fetch)
     try:
         geojson = _load_ca_counties()
@@ -255,7 +301,8 @@ async def map_pm25(date: str):
             matched += 1
     print(f"[map_pm25] Matched PM2.5 data for {matched}/{len(features)} counties")
 
-    return Response(content=json.dumps(geojson), media_type="application/json")
+    payload = json.dumps(geojson)
+    return Response(content=_cache_put("pm25", date, payload), media_type="application/json")
 
 
 # To run:
