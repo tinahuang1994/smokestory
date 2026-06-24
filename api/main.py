@@ -9,6 +9,7 @@ import geopandas as gpd
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -24,6 +25,11 @@ from narrative.llm import complete
 load_dotenv()
 
 app = FastAPI(title="SmokeStory")
+
+# Gzip-compress responses. The county GeoJSON layer is ~284 KB uncompressed but
+# is highly repetitive coordinate text that compresses to roughly a fifth of
+# that, cutting the dominant transfer cost of a page load.
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 app.add_middleware(
     CORSMiddleware,
