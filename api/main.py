@@ -200,14 +200,28 @@ async def map_fires(date: str):
 
 CA_COUNTIES_URL = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/california-counties.geojson"
 
+# The CA county boundary GeoJSON (~400 KB) is static and never changes, but it
+# was being re-downloaded from GitHub on EVERY /map/pm25 request — ~3s of pure
+# overhead per page load. Fetch it once and cache the raw JSON text in memory;
+# json.loads() per request returns a fresh mutable copy (callers mutate feature
+# properties) in a few ms.
+_ca_counties_text = None
+
+
+def _load_ca_counties():
+    global _ca_counties_text
+    if _ca_counties_text is None:
+        resp = requests.get(CA_COUNTIES_URL, verify=False, timeout=30)
+        resp.raise_for_status()
+        _ca_counties_text = resp.text
+    return json.loads(_ca_counties_text)
+
 
 @app.get("/map/pm25/06/{date}")
 async def map_pm25(date: str):
-    # 1. Fetch California county boundaries from GitHub static GeoJSON
+    # 1. Load California county boundaries (cached in memory after first fetch)
     try:
-        resp = requests.get(CA_COUNTIES_URL, verify=False, timeout=30)
-        resp.raise_for_status()
-        geojson = resp.json()
+        geojson = _load_ca_counties()
         features = geojson.get("features", [])
         print(f"[map_pm25] Loaded {len(features)} California county features")
     except Exception as e:
