@@ -7,7 +7,7 @@ services:
     envVars:
       - key: PORT
         value: 10000
-      - key: ANTHROPIC_API_KEY
+      - key: DEEPSEEK_API_KEY
         sync: false
       - key: FIRMS_MAP_KEY
         sync: false

@@ -1,13 +1,11 @@
-import os
-import anthropic
 from datetime import datetime
 from dotenv import load_dotenv
 
 from pipeline.news import get_news_headlines
+from narrative.llm import complete
+from narrative.guard import check
 
 load_dotenv()
-
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 SAFE_DAILY_LIMIT = 9.0  # EPA annual NAAQS (2024 revision) — matches legend "Good" threshold
 
@@ -140,10 +138,19 @@ def generate_narrative(county_data, date=None):
         f"Do NOT use '[smoke descriptor] [verb] [county]' forms such as "
         f"'Heavy smoke blankets {county_name}', 'Smoke chokes {county_name}', "
         f"'Smoke hangs over {county_name}', or any similar construction. These restate the input.\n"
-        f"  (c) A human action or impact drawn directly from California news "
-        f"(e.g. evacuations, closures, deaths) — California events only.\n"
-        f"  (d) A contrast — what's normal for this time of year vs. what's happening now.\n"
-        f"Do NOT open with a generalization. Do NOT open with 'On [date]' or '{county_name} County'."
+        f"  (c) A human action or impact INSIDE {county_name} County drawn directly from "
+        f"California news (e.g. evacuations, closures) — only events located in {county_name} "
+        f"County itself.\n"
+        f"  (d) A contrast — what is normal for this time of year in {county_name} County vs. "
+        f"what is happening now. This must be a TEMPORAL contrast about {county_name} County "
+        f"itself; do NOT contrast it against another county or region.\n"
+        f"Do NOT open with a generalization. Do NOT open with 'On [date]' or '{county_name} County'. "
+        f"Sentence 1 must NOT name — and must NOT lead with — any county, city, region, or "
+        f"place other than one physically inside {county_name} County. This includes broad "
+        f"anchors like 'across California', 'statewide', or a neighboring county/city. "
+        f"WRONG openers: 'In the wine country north of San Francisco...' (names San Francisco), "
+        f"'While wildfires burn across California, {county_name} County...' (statewide anchor). "
+        f"RIGHT: lead with a place, condition, or scene physically inside {county_name} County."
     )
 
     sections = []
@@ -198,7 +205,9 @@ def generate_narrative(county_data, date=None):
     elif pm25_mean is not None:
         data_instruction = (
             f"Sentence 2 — Data: State that PM2.5 is {pm25_mean:.1f} µg/m³, "
-            f"classified as {severity}, and note it is within or below the safe daily threshold."
+            f"classified as {severity}, and note it is at or below the EPA 'Good' "
+            f"threshold of 9 µg/m³ (the annual standard). Do NOT invent or cite any "
+            f"other threshold number."
         )
     else:
         data_instruction = (
@@ -214,7 +223,12 @@ def generate_narrative(county_data, date=None):
         "Sentence 4 — Context: One sentence of broader context about wildfire, smoke, "
         "air quality, or climate as it relates to this county or California. "
         "Do NOT reference unrelated news events (crime, politics, sports, etc.) "
-        "and do NOT reference events in other states or countries.\n\n"
+        "and do NOT reference events in other states or countries. "
+        "State this context directly as a plain factual statement. Do NOT attribute it "
+        "to any person, official, title, agency, or group — no 'officials warn', "
+        "'experts say', 'the fire chief said', 'meteorologists note', 'a study found', "
+        "'authorities caution'. If you cannot state the context as a plain fact without "
+        "inventing a source, choose simpler context you can state directly.\n\n"
         f"Geographic rule (STRICT): {county_name} County is the subject of this narrative. "
         f"You may ONLY name a specific city, landmark, or neighborhood in sentence 1 if "
         f"that place is physically inside {county_name} County, California. "
@@ -226,19 +240,50 @@ def generate_narrative(county_data, date=None):
         "(blankets, chokes, hangs over, settles over, covers, etc.) — these restate input data.\n"
         "  - Health guidance must name a specific population at risk and a specific action. "
         "Do not write advisory-voice ('residents are urged', 'officials warn', "
-        "'health authorities recommend', 'it is important to', 'people should be aware').\n\n"
+        "'health authorities recommend', 'it is important to', 'people should be aware').\n"
+        "  - Do NOT attribute any quote, statement, or opinion to a person, official, agency, "
+        "title, or group — whether named (e.g. 'Chief Jones') or generic (e.g. 'the fire chief', "
+        "'officials', 'authorities', 'experts', 'scientists', 'meteorologists'). Inventing or "
+        "implying a source is a serious error. State everything as plain fact without attribution. "
+        "(The ONLY exception: you may write 'according to the Guardian' if and only if the claim "
+        "comes directly from the Guardian context provided above.)\n"
+        "  - Do NOT invent specific numbers (acreage, homes lost, evacuee counts, casualties, "
+        "records) that are not present in the data or Guardian context above.\n\n"
         "Output all four sentences as a single unbroken paragraph. "
         "No line breaks between sentences. Flowing prose only."
     )
 
     prompt = "\n\n".join(sections)
 
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=450,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return message.content[0].text
+    # Low temperature: this is a grounded, accuracy-critical task — every specific
+    # claim must trace to the data or Guardian context. Higher temperatures made
+    # DeepSeek fabricate named sources and numbers. (2026-06-22)
+    #
+    # DeepSeek still intermittently breaks two hard rules (attribution/advisory
+    # voice, and naming another county in sentence 1) that the prompt alone can't
+    # stop. So we run a deterministic guard and regenerate up to twice with a
+    # pointed correction, keeping the cleanest draft if it never fully passes.
+    text = complete(prompt, max_tokens=450, temperature=0.2)
+    violations = check(text, county_name)
+    if not violations:
+        return text
+
+    best_text, best_violations = text, violations
+    for _ in range(2):
+        correction = (
+            "\n\nYour previous draft violated these strict rules:\n- "
+            + "\n- ".join(violations)
+            + "\nRewrite the four-sentence narrative fixing these specific problems. "
+            "Keep everything else. Output only the narrative paragraph."
+        )
+        text = complete(prompt + correction, max_tokens=450, temperature=0.2)
+        violations = check(text, county_name)
+        if not violations:
+            return text
+        if len(violations) < len(best_violations):
+            best_text, best_violations = text, violations
+
+    return best_text
 
 
 if __name__ == "__main__":

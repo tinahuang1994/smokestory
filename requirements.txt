@@ -4,5 +4,4 @@ geopandas
 fastapi
 uvicorn
 python-dotenv
-anthropic
 shapely

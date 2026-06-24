@@ -3,7 +3,6 @@ import io
 import json
 import math
 import requests
-import anthropic
 import pandas as pd
 from datetime import datetime, date as date_type
 import geopandas as gpd
@@ -20,6 +19,7 @@ from pipeline.goes_hms import get_smoke_polygons
 from pipeline.viirs_fire import get_active_fires
 from pipeline.news import get_news_headlines
 from narrative.generator import generate_narrative
+from narrative.llm import complete
 
 load_dotenv()
 
@@ -48,9 +48,6 @@ async def impact_page():
 @app.get("/methodology")
 async def methodology_page():
     return FileResponse(os.path.join(frontend_path, "methodology.html"))
-
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-
 
 def validate_date(date_str: str):
     try:
@@ -135,12 +132,8 @@ Answer in plain English, keeping your response concise and accessible.
 Always end your response with this line on its own:
 For medical advice, consult your doctor or local health authority. For current air quality, visit AirNow.gov."""
 
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=300,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return {"answer": message.content[0].text}
+    answer = complete(prompt, max_tokens=300)
+    return {"answer": answer}
 
 
 @app.get("/news/{county_name}/{date}")

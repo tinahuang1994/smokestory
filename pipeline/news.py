@@ -18,17 +18,45 @@ RELEVANT_KEYWORDS = {
 }
 
 
-def _filter_relevant(results):
-    """Keep only wildfire/smoke/air quality articles."""
+# California-location signals. The broad fallback query ("California wildfire
+# smoke") is ranked by Guardian relevance and can surface wildfire articles about
+# the UK, Australia, Greece, etc. Those must never reach the narrative (the S4
+# rule forbids out-of-state/out-of-country events), so fallback results are
+# additionally required to mention California.
+CALIFORNIA_SIGNALS = {
+    "california", "californ", "calif.", " ca ", "los angeles", "san francisco",
+    "san diego", "sacramento", "sonoma", "napa", "yosemite", "sierra nevada",
+    "bay area", "southern california", "northern california",
+}
+
+
+def _mentions_california(text):
+    return any(sig in text for sig in CALIFORNIA_SIGNALS)
+
+
+def _article_text(r):
+    return (
+        (r.get("fields", {}).get("headline") or r.get("webTitle") or "")
+        + " "
+        + (r.get("fields", {}).get("trailText") or "")
+    ).lower()
+
+
+def _filter_relevant(results, require_california=False):
+    """Keep only wildfire/smoke/air quality articles.
+
+    When require_california is True (used for the broad fallback query), also
+    require an explicit California signal so non-California wildfire coverage is
+    dropped before it can reach the narrative prompt.
+    """
     filtered = []
     for r in results:
-        text = (
-            (r.get("fields", {}).get("headline") or r.get("webTitle") or "") +
-            " " +
-            (r.get("fields", {}).get("trailText") or "")
-        ).lower()
-        if any(kw in text for kw in RELEVANT_KEYWORDS):
-            filtered.append(r)
+        text = _article_text(r)
+        if not any(kw in text for kw in RELEVANT_KEYWORDS):
+            continue
+        if require_california and not _mentions_california(text):
+            continue
+        filtered.append(r)
     return filtered
 
 
@@ -82,7 +110,7 @@ def get_news_headlines(county_name, date):
             results = _query_guardian(
                 "California wildfire smoke", fallback_from, fallback_to, page_size=8
             )
-            filtered = _filter_relevant(results)
+            filtered = _filter_relevant(results, require_california=True)
 
         return _format_results(filtered)
     except requests.RequestException as e:
