@@ -3,6 +3,12 @@
 ## Deployment
 - Push to `main` on GitHub triggers automatic Render redeploy
 - Always push after changes; confirm with `git push origin main`
+- Render service id: `srv-d6to8faa214c73cmv3mg`. Required env var: `DEEPSEEK_API_KEY` (set in Render, `sync: false`)
+
+## LLM backend (migrated 2026-06-24: Claude → DeepSeek)
+- Both the per-county narrative (`narrative/generator.py`) and the `/chat` assistant (`api/main.py`) call **DeepSeek `deepseek-chat`** through the shared helper `narrative/llm.py` (plain `requests` POST, OpenAI-compatible endpoint — no SDK). Migrated off Anthropic Claude because that account ran out of credit.
+- `narrative/guard.py` is a deterministic accuracy gate: DeepSeek intermittently breaks the no-attribution / no-advisory-voice and geographic-opener rules that the prompt alone can't enforce. `generate_narrative()` runs the guard and regenerates up to 2× with a pointed correction. **If you edit the narrative prompt or guard, re-run the 8-county QA batch and check for fabricated named sources, advisory voice ("officials warn"), out-of-county/statewide openers, and that pinned ratios appear verbatim.**
+- Narrative generation runs at `temperature=0.2`. The broad fallback Guardian query (`pipeline/news.py`) requires a California signal so out-of-state wildfire articles don't bleed into sentence 4.
 
 ## Side Panel Design Rules
 
