@@ -10,6 +10,13 @@
 - `narrative/guard.py` is a deterministic accuracy gate: DeepSeek intermittently breaks the no-attribution / no-advisory-voice and geographic-opener rules that the prompt alone can't enforce. `generate_narrative()` runs the guard and regenerates up to 2× with a pointed correction. **If you edit the narrative prompt or guard, re-run the 8-county QA batch and check for fabricated named sources, advisory voice ("officials warn"), out-of-county/statewide openers, and that pinned ratios appear verbatim.**
 - Narrative generation runs at `temperature=0.2`. The broad fallback Guardian query (`pipeline/news.py`) requires a California signal so out-of-state wildfire articles don't bleed into sentence 4.
 
+## Performance & caching (2026-06-24)
+The map page loads three layers in parallel (`/map/pm25`, `/map/smoke`, `/map/fires`), each of which hit a slow external API on every request. Optimizations in `api/main.py`:
+- **Static CA county GeoJSON** (`_load_ca_counties`) is fetched from GitHub once and cached in memory — it was re-downloaded every PM2.5 request.
+- **Historical map data cache** (`_map_cache`, `_cacheable`/`_cache_get`/`_cache_put`): EPA PM2.5, NOAA smoke, NASA fire responses are memoized per date **only for dates older than 14 days** (finalized data). Recent dates (last 14 days) always fetch live; transient fetch failures are never cached. Caps at 300 entries; clears on cold start. If you change the lag window or add a layer, keep the "don't cache recent/erroring data" rule.
+- **Gzip** (`GZipMiddleware`) compresses responses — the county GeoJSON drops ~284KB → ~83KB on the wire.
+- **Known remaining cost — cold start:** the Render service is on the **free plan**, which spins down after ~15 min idle; the first visit then waits ~10–60s for the container (heavy geopandas import) to boot. Left as-is by choice (2026-06-24). To fix later: upgrade to Starter ($7/mo, always-on) or add a keep-warm cron pinging `/health`.
+
 ## Side Panel Design Rules
 
 ### Typography
