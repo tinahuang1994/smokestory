@@ -1557,10 +1557,22 @@
     maxBoundsViscosity: 0.5,
   });
 
-  L.maplibreGL({
+  const basemapLayer = L.maplibreGL({
     style: 'https://tiles.openfreemap.org/styles/dark',
     attributionControl: false,
   }).addTo(map);
+  const basemapMap = basemapLayer.getMaplibreMap();
+  basemapMap.on('styleimagemissing', (event) => {
+    if (basemapMap.hasImage(event.id)) return;
+    // OpenFreeMap occasionally references optional sprite icons that are absent
+    // from the dark style. An empty fallback preserves the current rendering and
+    // prevents repeated MapLibre warnings without affecting SmokeStory layers.
+    basemapMap.addImage(event.id, {
+      width: 1,
+      height: 1,
+      data: new Uint8Array([0, 0, 0, 0]),
+    });
+  });
   map.attributionControl.addAttribution(
     '<a href="https://openfreemap.org/">OpenFreeMap</a> &copy; OpenMapTiles Data from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   );

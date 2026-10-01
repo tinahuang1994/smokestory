@@ -11,6 +11,8 @@ class BasemapConfigTest(unittest.TestCase):
 
         self.assertIn("https://tiles.openfreemap.org/styles/dark", html)
         self.assertIn("@maplibre/maplibre-gl-leaflet@0.1.4", html)
+        self.assertIn("styleimagemissing", html)
+        self.assertIn("basemapMap.addImage", html)
         self.assertNotIn("cartodb-basemaps", html)
         self.assertNotIn("basemaps.cartocdn.com", html)
 
