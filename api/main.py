@@ -18,7 +18,7 @@ from pipeline.build_layer import build_county_layer, COUNTIES_PATH
 from pipeline.epa_aqs import get_pm25_readings
 from pipeline.goes_hms import get_smoke_polygons
 from pipeline.viirs_fire import get_active_fires
-from pipeline.news import get_news_headlines
+from pipeline.news import NewsAPIError, get_news_headlines
 from narrative.generator import generate_narrative
 from narrative.llm import complete
 
@@ -144,8 +144,16 @@ For medical advice, consult your doctor or local health authority. For current a
 
 @app.get("/news/{county_name}/{date}")
 async def news(county_name: str, date: str):
-    headlines = get_news_headlines(county_name, date)
-    return {"headlines": headlines}
+    validate_date(date)
+    try:
+        headlines = get_news_headlines(county_name, date)
+        return {"headlines": headlines}
+    except NewsAPIError as exc:
+        print(f"[news] Guardian integration unavailable: {exc}")
+        raise HTTPException(
+            status_code=502,
+            detail="News context is temporarily unavailable.",
+        ) from exc
 
 
 EMPTY_FC = {"type": "FeatureCollection", "features": []}

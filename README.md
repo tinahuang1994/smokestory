@@ -11,7 +11,7 @@ GitHub: https://github.com/tinahuang1994/smokestory
 
 ## What It Does
 
-SmokeStory combines three real-time satellite and sensor data sources to tell the story of wildfire smoke:
+SmokeStory combines three public datasets with different update schedules to tell the story of wildfire smoke:
 
 - **Where the fires are** — NASA VIIRS satellite fire detections with Fire Radiative Power (FRP) intensity data
 - **Where the smoke is** — NOAA Hazard Mapping System smoke plume boundaries with density classification
@@ -34,7 +34,7 @@ For any California county on any date since 2005, SmokeStory generates a plain-E
 - 4-sentence journalistic narrative per county per date
 - Severity-calibrated language (Good through Hazardous)
 - Integrates Guardian news headlines for context
-- Powered by Claude claude-sonnet-4-20250514
+- Powered by DeepSeek `deepseek-chat`
 - Explicit EPA severity classification passed to model — no independent AI reclassification
 
 ### Financial Impact Module
@@ -66,10 +66,10 @@ Impact page: https://smokestory.onrender.com/impact
 
 | Source | What It Provides | Update Frequency |
 |--------|-----------------|-----------------|
-| **NASA FIRMS VIIRS** | Active fire detections with FRP | ~3 hours |
+| **NASA FIRMS VIIRS** | Active fire detections with FRP | Near-real-time; satellite passes roughly twice daily |
 | **NOAA HMS** | Smoke plume boundaries (Light/Medium/Heavy) | Daily |
-| **EPA AQS (param 88101)** | PM2.5 ground monitor readings | Daily |
-| **Guardian API** | News headlines for narrative context | Real-time |
+| **EPA AQS (param 88101)** | Finalized PM2.5 ground monitor readings | 4–8 week lag |
+| **Guardian API** | News headlines for narrative context | Queried on demand |
 | **CAL FIRE DINS** | Structure damage counts | Static snapshot, Feb 5, 2025 |
 | **CAR 2024** | Pre-fire property values | Static 2024 annual data |
 
@@ -92,7 +92,7 @@ smokestory/
 │   └── news.py                  # Guardian API headlines
 │
 ├── narrative/
-│   └── generator.py             # Claude narrative engine
+│   └── generator.py             # DeepSeek narrative engine
 │
 ├── frontend/
 │   ├── index.html               # Main SmokeStory map interface
@@ -106,7 +106,7 @@ smokestory/
 
 **Backend:** FastAPI + Python
 **Frontend:** Leaflet.js + Flatpickr (single-file HTML, no build step)
-**AI:** Anthropic Claude claude-sonnet-4-20250514
+**AI:** DeepSeek `deepseek-chat`
 **Deployment:** Render free tier
 **Geospatial:** GeoPandas for spatial joins
 
@@ -153,7 +153,7 @@ Open http://127.0.0.1:8000 in your browser.
 
 | Key | Where to get it |
 |-----|----------------|
-| `ANTHROPIC_API_KEY` | console.anthropic.com |
+| `DEEPSEEK_API_KEY` | platform.deepseek.com |
 | `FIRMS_MAP_KEY` | firms.modaps.eosdis.nasa.gov |
 | `EPA_AQS_EMAIL` | aqs.epa.gov data API page |
 | `EPA_AQS_KEY` | aqs.epa.gov data API page |
@@ -203,7 +203,7 @@ Cost of Illness is more appropriate for acute 14-day exposure events. VSL is des
 
 ## Acknowledgments
 
-Data provided by NASA FIRMS, NOAA HMS, EPA AQS, and The Guardian. AI narratives powered by Anthropic Claude. Built with FastAPI, Leaflet.js, and GeoPandas.
+Data provided by NASA FIRMS, NOAA HMS, EPA AQS, and The Guardian. AI narratives powered by DeepSeek. Built with FastAPI, Leaflet.js, and GeoPandas.
 
 SmokeStory is an independent open-source project. Not affiliated with any government agency, insurance company, or academic institution.
 

@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GUARDIAN_API_KEY = os.getenv("GUARDIAN_API_KEY", "test")
+
+class NewsAPIError(RuntimeError):
+    """Raised when the upstream news provider cannot be queried."""
 
 
 RELEVANT_KEYWORDS = {
@@ -73,18 +75,29 @@ def _format_results(results):
 
 
 def _query_guardian(q, from_date, to_date, page_size=5):
+    api_key = os.getenv("GUARDIAN_API_KEY", "").strip()
+    if not api_key or api_key.lower() in {"test", "your_guardian_api_key_here"}:
+        raise NewsAPIError("GUARDIAN_API_KEY is not configured")
+
     params = {
         "q": q,
         "from-date": from_date,
         "to-date": to_date,
         "order-by": "relevance",
         "page-size": page_size,
-        "api-key": GUARDIAN_API_KEY,
+        "api-key": api_key,
         "show-fields": "headline,trailText",
     }
-    response = requests.get("https://content.guardianapis.com/search", params=params)
-    response.raise_for_status()
-    return response.json().get("response", {}).get("results", [])
+    try:
+        response = requests.get(
+            "https://content.guardianapis.com/search",
+            params=params,
+            timeout=20,
+        )
+        response.raise_for_status()
+        return response.json().get("response", {}).get("results", [])
+    except requests.RequestException as exc:
+        raise NewsAPIError("Guardian request failed") from exc
 
 
 def get_news_headlines(county_name, date):
@@ -93,29 +106,25 @@ def get_news_headlines(county_name, date):
     from_date = (event_date - timedelta(days=1)).strftime("%Y-%m-%d")
     to_date = (event_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
-    try:
-        # Primary query: county-specific
+    # Primary query: county-specific
+    results = _query_guardian(
+        f"{county_name} wildfire smoke California", from_date, to_date
+    )
+    filtered = _filter_relevant(results)
+
+    # Fallback: if county query returns nothing, try broader CA wildfire query
+    # with a wider ±3 day window. Major named fires (e.g. Camp Fire, Carr Fire)
+    # are often headlined without the county name, and Guardian coverage can
+    # appear 2–3 days after ignition.
+    if not filtered:
+        fallback_from = (event_date - timedelta(days=3)).strftime("%Y-%m-%d")
+        fallback_to = (event_date + timedelta(days=3)).strftime("%Y-%m-%d")
         results = _query_guardian(
-            f"{county_name} wildfire smoke California", from_date, to_date
+            "California wildfire smoke", fallback_from, fallback_to, page_size=8
         )
-        filtered = _filter_relevant(results)
+        filtered = _filter_relevant(results, require_california=True)
 
-        # Fallback: if county query returns nothing, try broader CA wildfire query
-        # with a wider ±3 day window. Major named fires (e.g. Camp Fire, Carr Fire)
-        # are often headlined without the county name, and Guardian coverage can
-        # appear 2–3 days after ignition.
-        if not filtered:
-            fallback_from = (event_date - timedelta(days=3)).strftime("%Y-%m-%d")
-            fallback_to = (event_date + timedelta(days=3)).strftime("%Y-%m-%d")
-            results = _query_guardian(
-                "California wildfire smoke", fallback_from, fallback_to, page_size=8
-            )
-            filtered = _filter_relevant(results, require_california=True)
-
-        return _format_results(filtered)
-    except requests.RequestException as e:
-        print(f"Error fetching news: {e}")
-        return []
+    return _format_results(filtered)
 
 
 if __name__ == "__main__":
